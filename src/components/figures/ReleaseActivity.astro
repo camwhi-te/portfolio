@@ -220,17 +220,17 @@ const keySize = 14;
     <p class="chart__readout" aria-live="polite">Point at a month or a release to read it.</p>
     <div class="chart__key" aria-hidden="true">
       <span>
-        <svg width={keySize} height={keySize} viewBox="0 0 14 14"><line x1="7" x2="7" y1="14" y2="4" stroke="#191e2e" stroke-width="2"></line><circle cx="7" cy="3.2" r="2.6" fill="#191e2e"></circle></svg>
+        <svg width={keySize} height={keySize} viewBox="0 0 14 14"><line x1="7" x2="7" y1="14" y2="4" style="stroke: var(--ink)" stroke-width="2"></line><circle cx="7" cy="3.2" r="2.6" style="fill: var(--ink)"></circle></svg>
         release (taller: major, then minor, then patch)
       </span>
       <span>
-        <svg width={keySize} height={keySize} viewBox="0 0 14 14"><line x1="7" x2="7" y1="14" y2="5" stroke="#191e2e" stroke-width="1.25"></line><circle cx="7" cy="3.2" r="2.6" fill="#f7f9fb" stroke="#191e2e" stroke-width="1.25"></circle></svg>
+        <svg width={keySize} height={keySize} viewBox="0 0 14 14"><line x1="7" x2="7" y1="14" y2="5" style="stroke: var(--ink)" stroke-width="1.25"></line><circle cx="7" cy="3.2" r="2.6" style="fill: var(--paper); stroke: var(--ink)" stroke-width="1.25"></circle></svg>
         pre-release
       </span>
       {
         latestMajor && (
           <span>
-            <svg width={keySize} height={keySize} viewBox="0 0 14 14"><line x1="7" x2="7" y1="0" y2="14" stroke="#2c6a87" stroke-width="1"></line></svg>
+            <svg width={keySize} height={keySize} viewBox="0 0 14 14"><line x1="7" x2="7" y1="0" y2="14" style="stroke: var(--pencil)" stroke-width="1"></line></svg>
             {latestMajor.tag}, carried down to the commits
           </span>
         )

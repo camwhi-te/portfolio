@@ -208,6 +208,10 @@
 .skip-link:focus-visible {
   transform: none;
 }
+/* The skip link moves focus to <main>; the page itself needs no ring. */
+#main:focus {
+  outline: none;
+}
 
 /* ------------------------------------------------------------ running head */
 
@@ -389,6 +393,7 @@
 }
 .trail li:not(:last-child)::after {
   content: "/";
+  content: "/" / "";
   margin-inline: 0.6em;
   color: color-mix(in oklab, var(--ink) 30%, var(--paper));
 }
@@ -415,7 +420,8 @@
   border-block-end: 1px solid var(--rule);
 }
 .title-block h1 {
-  font-size: var(--name);
+  font-size: min(var(--name), 8.6vw);
+  overflow-wrap: break-word;
   line-height: 0.95;
   letter-spacing: 0.045em;
   text-transform: uppercase;
@@ -537,6 +543,7 @@
 /* Run-in facts: the separator hangs at the end of a line, never starts one. */
 .fact:not(:last-child)::after {
   content: "\a0 ·";
+  content: "\a0 ·" / "";
   margin-inline-end: 0.4em;
   color: var(--graphite);
 }
@@ -1412,6 +1419,86 @@ th.num {
   border: 1px solid var(--guide);
   z-index: 3;
   pointer-events: none;
+}
+
+/* ------------------------------------------------------ contrast settings */
+
+/*
+ * "Increase contrast" (macOS, iOS, Windows contrast themes off): the same
+ * sheet, inked harder. Graphite darkens, hairlines and rulings strengthen,
+ * and every link carries a full underline.
+ */
+@media (prefers-contrast: more) {
+  :root {
+    --graphite: #343a47; /* 10.9:1 on paper */
+    --hairline: color-mix(in oklab, var(--ink) 45%, var(--paper));
+    --rule: var(--ink);
+    --guide: #3b7a98;
+    --guide-wash: color-mix(in oklab, var(--guide) 30%, var(--paper));
+    --pencil: #1d4c63;
+  }
+  a,
+  .index__title a,
+  .sheet__head h2 a,
+  .entry__head h3 a,
+  .running-head__nav a,
+  .pager .title {
+    text-decoration-line: underline;
+    text-decoration-color: currentColor;
+    text-decoration-thickness: 1px;
+  }
+  .running-head__nav a:is([aria-current], .is-here) {
+    text-decoration-thickness: 3px;
+  }
+  :focus-visible {
+    outline-width: 3px;
+  }
+}
+
+/*
+ * Forced colours (Windows High Contrast and contrast themes): the browser
+ * repaints text and boxes in the user's colours, but not the drawings, which
+ * would stay dark ink on a possibly dark ground. Mapping the tokens to system
+ * colours and opting the drawings out lets them follow the user's theme.
+ */
+@media (forced-colors: active) {
+  :root {
+    --paper: Canvas;
+    --ink: CanvasText;
+    --graphite: CanvasText;
+    --hairline: GrayText;
+    --rule: CanvasText;
+    --guide: GrayText;
+    --guide-wash: Canvas;
+    --pencil: Highlight;
+  }
+  .drawing,
+  .ink-defs,
+  .chart__key svg,
+  .blank {
+    forced-color-adjust: none;
+  }
+  /* Lit and targeted entries lose their wash; an outline in Highlight replaces it. */
+  .index > li.is-lit,
+  .signs li.is-lit,
+  .signs li:target {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  .running-head__nav a:is([aria-current], .is-here) {
+    text-decoration-thickness: 3px;
+  }
+  .running-head__toggle[aria-expanded="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+  .skip-link,
+  .print-action,
+  .running-head__toggle {
+    border: 1px solid ButtonText;
+  }
 }
 
 /* -------------------------------------------------------- view transitions */

@@ -10,10 +10,11 @@ export function initMenu() {
   const nav = head?.querySelector<HTMLElement>("#site-nav");
   if (!head || !toggle || !nav) return;
 
+  // The button keeps one name, "Menu"; aria-expanded carries whether it is open,
+  // and the filled style shows it.
   const setOpen = (open: boolean) => {
     head.dataset["menu"] = open ? "open" : "closed";
     toggle.setAttribute("aria-expanded", String(open));
-    toggle.textContent = open ? "Close" : "Menu";
   };
   const isOpen = () => head.dataset["menu"] === "open";
 
@@ -30,6 +31,11 @@ export function initMenu() {
     if (event.key !== "Escape" || !isOpen()) return;
     setOpen(false);
     toggle.focus();
+  });
+
+  // Tabbing out of the running head closes the menu behind you.
+  head.addEventListener("focusout", (event) => {
+    if (isOpen() && !(event.relatedTarget instanceof Node && head.contains(event.relatedTarget))) setOpen(false);
   });
 
   document.addEventListener("click", (event) => {

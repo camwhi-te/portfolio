@@ -150,9 +150,9 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
       <section class="sheet" id="ref-100" data-sheet aria-labelledby="h-100">
         <header class="sheet__head">
           <h2 id="h-100" style="view-transition-name: title-100">
-            <a href="/jexpanel/"><span class="n">100</span>Jexpanel</a>
+            <a href="/jexpanel/"><span class="n" aria-hidden="true">100</span>Jexpanel</a>
           </h2>
-          <a class="sheet__more" href="/jexpanel/">Open the Jexpanel page&nbsp;→</a>
+          <a class="sheet__more" href="/jexpanel/">Open the Jexpanel page<span aria-hidden="true">&nbsp;→</span></a>
           <p class="sheet__sub">Formerly Jexactyl. Game server panel and billing system, open source.</p>
         </header>
         <div class="sheet__body">
@@ -222,9 +222,9 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
       <section class="sheet" id="ref-200" data-sheet aria-labelledby="h-200">
         <header class="sheet__head">
           <h2 id="h-200" style="view-transition-name: title-200">
-            <a href="/falcon-hosting/"><span class="n">200</span>Falcon Hosting</a>
+            <a href="/falcon-hosting/"><span class="n" aria-hidden="true">200</span>Falcon Hosting</a>
           </h2>
-          <a class="sheet__more" href="/falcon-hosting/">Open the Falcon Hosting page&nbsp;→</a>
+          <a class="sheet__more" href="/falcon-hosting/">Open the Falcon Hosting page<span aria-hidden="true">&nbsp;→</span></a>
           <p class="sheet__sub">{falcon.data.legalName}. Game servers, VPS and container hosting in the UK and EU.</p>
         </header>
         <div class="sheet__body">
@@ -280,7 +280,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
 
   <section class="sheet" id="ref-300" data-sheet aria-labelledby="h-300">
     <header class="sheet__head">
-      <h2 id="h-300"><span class="n">300</span>{section(300).label}</h2>
+      <h2 id="h-300"><span class="n" aria-hidden="true">300</span>{section(300).label}</h2>
     </header>
     <ol class="entries">
       {
@@ -290,11 +290,11 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
           return (
             <li class="entry" id={`ref-${project.data.numeral}`} data-ref={String(project.data.numeral)}>
               <div class="entry__head">
-                <span class="n">{project.data.numeral}</span>
+                <span class="n" aria-hidden="true">{project.data.numeral}</span>
                 <h3 style={`view-transition-name: title-${project.data.numeral}`}>
                   <a href={`/${project.id}/`}>{project.data.title}</a>
                 </h3>
-                <a class="entry__more" href={`/${project.id}/`}>Project page&nbsp;→</a>
+                <a class="entry__more" href={`/${project.id}/`}>Project page<span class="visually-hidden"> for {project.data.title}</span><span aria-hidden="true">&nbsp;→</span></a>
               </div>
               <dl class="furniture">
                 <dt>Role</dt>
@@ -335,7 +335,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
 
   <section class="sheet" id="ref-400" data-sheet aria-labelledby="h-400">
     <header class="sheet__head">
-      <h2 id="h-400"><span class="n">400</span>Experience</h2>
+      <h2 id="h-400"><span class="n" aria-hidden="true">400</span>Experience</h2>
     </header>
     <ol class="entries">
       {
@@ -346,7 +346,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
           return (
             <li class="entry" id={`ref-${entry.data.numeral}`} data-ref={String(entry.data.numeral)}>
               <div class="entry__head">
-                <span class="n">{entry.data.numeral}</span>
+                <span class="n" aria-hidden="true">{entry.data.numeral}</span>
                 <h3>{entry.data.link ? <a href={entry.data.link}>{name}</a> : name}</h3>
               </div>
               <dl class="furniture">
@@ -389,7 +389,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
 
   <section class="sheet" id="ref-500" data-sheet aria-labelledby="h-500">
     <header class="sheet__head">
-      <h2 id="h-500"><span class="n">500</span>{section(500).label}</h2>
+      <h2 id="h-500"><span class="n" aria-hidden="true">500</span>{section(500).label}</h2>
     </header>
     <div class="correspondence">
       <dl class="furniture">

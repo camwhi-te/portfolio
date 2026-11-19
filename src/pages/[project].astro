@@ -87,7 +87,7 @@ const after = section(400);
   <header class="title-block" id={`ref-${data.numeral}`} data-sheet data-ref={String(data.numeral)}>
     <div>
       <h1 style={`view-transition-name: title-${data.numeral}`}>
-        <span class="visually-hidden">{data.numeral}, </span>{data.title}
+        {data.title}
       </h1>
       <p class="formerly">
         <span class="lining">({data.numeral})</span>
@@ -293,12 +293,12 @@ const after = section(400);
     {
       previous ? (
         <a href={`/${previous.id}/`} rel="prev">
-          <span class="dir">← Previous project</span>
+          <span class="dir"><span aria-hidden="true">← </span>Previous project</span>
           <span class="title">{previous.data.title}</span>
         </a>
       ) : (
         <a href="/">
-          <span class="dir">← Front page</span>
+          <span class="dir"><span aria-hidden="true">← </span>Front page</span>
           <span class="title">{site.name}</span>
         </a>
       )
@@ -306,12 +306,12 @@ const after = section(400);
     {
       next ? (
         <a href={`/${next.id}/`} rel="next">
-          <span class="dir">Next project →</span>
+          <span class="dir">Next project<span aria-hidden="true"> →</span></span>
           <span class="title">{next.data.title}</span>
         </a>
       ) : (
         <a href={after.href}>
-          <span class="dir">Back to the front page →</span>
+          <span class="dir">Back to the front page<span aria-hidden="true"> →</span></span>
           <span class="title">{after.label}</span>
         </a>
       )

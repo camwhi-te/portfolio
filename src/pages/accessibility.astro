@@ -1,0 +1,133 @@
+---
+import Fill from "../components/Fill.astro";
+import Document from "../layouts/Document.astro";
+import { site } from "../site.ts";
+
+/**
+ * Accessibility statement: what the site supports, how it was checked, what
+ * is known not to work yet, and how to report a problem. Update `reviewed`
+ * whenever the checks are run again.
+ */
+const reviewed = "19 November 2026";
+---
+
+<Document
+  title={`Accessibility, ${site.name}`}
+  description={`How the portfolio of ${site.name} supports keyboards, screen readers, zoom, contrast settings and reduced motion.`}
+  sheets={1}
+>
+  <nav class="trail" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/">{site.name}</a></li>
+      <li aria-current="page">Accessibility</li>
+    </ol>
+  </nav>
+
+  <header class="title-block" data-sheet>
+    <h1>Accessibility</h1>
+    <p class="formerly">This site aims to meet WCAG 2.2 at level AA. Last reviewed {reviewed}.</p>
+  </header>
+
+  <div class="statement">
+    <section class="division-block" aria-labelledby="supports">
+      <h2 class="division" id="supports">What the site supports</h2>
+      <dl class="furniture">
+        <dt>Keyboard</dt>
+        <dd>
+          Every link and control can be reached with Tab and shows a visible focus ring. “Skip to content” is the first
+          stop on every page. The menu on small screens opens with Enter or Space and closes with Escape. The chart of
+          releases and commits steps through months with the arrow keys, and through releases with Shift and the arrow
+          keys.
+        </dd>
+        <dt>Screen readers</dt>
+        <dd>
+          Pages use headings, landmarks and lists in a consistent order, and every page has its own title. Each drawing
+          has a text description, and its numbered parts are listed in text below it. The chart can be shown as two
+          data tables. Spaces left for text that is not yet written are announced as “not yet written”.
+        </dd>
+        <dt>Zoom and text size</dt>
+        <dd>
+          Text can be enlarged to 200&nbsp;% and the page zoomed to 400&nbsp;% without loss of content. At narrow
+          widths the layout becomes a single column with no sideways scrolling.
+        </dd>
+        <dt>Contrast</dt>
+        <dd>
+          Text meets a contrast ratio of at least 4.5:1. When your system asks for more contrast, grey text darkens and
+          every link is underlined. In Windows High Contrast and other forced-colour themes, the drawings and charts
+          take on your chosen colours.
+        </dd>
+        <dt>Motion</dt>
+        <dd>
+          When your system asks for reduced motion, the drawings appear complete instead of drawing themselves, numbers
+          do not animate, and pages change without a transition.
+        </dd>
+        <dt>Printing</dt>
+        <dd>Any page prints, or saves as a PDF, as paginated A4 sheets without the navigation.</dd>
+      </dl>
+    </section>
+
+    <section class="division-block" aria-labelledby="limits">
+      <h2 class="division" id="limits">Known limitations</h2>
+      <ul class="statement__list">
+        <li>
+          Pointing at a part of a drawing highlights it, but the drawings themselves are not keyboard controls. The same
+          parts are links in the numbered list beneath each drawing, and those links highlight the drawing when focused.
+        </li>
+        <li>
+          GitHub figures (stars, forks and the latest release) are refreshed after the page loads. Updates are not
+          announced, so that a screen reader is not interrupted; the page always loads with the figures taken when it
+          was built.
+        </li>
+      </ul>
+    </section>
+
+    <section class="division-block" aria-labelledby="checked">
+      <h2 class="division" id="checked">How it was checked</h2>
+      <p class="statement__text">
+        Every page was scanned with axe-core 4.10 against WCAG 2.2 A and AA at desktop and phone widths, then checked by
+        hand: keyboard only, at 320 pixels wide, with emulated forced colours, increased contrast and reduced motion.
+      </p>
+    </section>
+
+    <section class="division-block" aria-labelledby="report">
+      <h2 class="division" id="report">Reporting a problem</h2>
+      <p class="statement__text">
+        If something on this site does not work for you, please say so and it will be fixed. Write to {
+          site.email ? <a href={`mailto:${site.email}`}>{site.email}</a> : <Fill value="" label="Email" source="src/site.ts → email" width="14ch" />
+        } or open an issue on <a href={site.github}>GitHub</a>.
+      </p>
+    </section>
+  </div>
+</Document>
+
+<style>
+  .statement {
+    max-inline-size: 52rem;
+    margin-inline: auto;
+  }
+  .statement .furniture {
+    row-gap: 1rem;
+  }
+  .statement .furniture dd {
+    max-inline-size: var(--measure);
+  }
+  .statement__list {
+    max-inline-size: var(--measure);
+    padding-inline-start: 1.25em;
+  }
+  .statement__list li + li {
+    margin-block-start: 0.75rem;
+  }
+  .statement__text {
+    max-inline-size: var(--measure);
+  }
+  @media (width < 34em) {
+    .statement .furniture {
+      grid-template-columns: 1fr;
+      row-gap: 0.25rem;
+    }
+    .statement .furniture dd + dt {
+      margin-block-start: 1rem;
+    }
+  }
+</style>
