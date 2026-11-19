@@ -1,0 +1,232 @@
+---
+import Plate from "../Plate.astro";
+import { telcodashSigns } from "../../lib/figures.ts";
+import Diagram, { type Element } from "./Diagram.astro";
+
+/**
+ * FIG: the Telcodash stack, from the repositories of the Telcodash
+ * organisation (November 2026). Core is a Laravel and React application for
+ * staff. It never calls a daemon directly: it dispatches tasks to the gateway
+ * over HTTP, and the gateway queues them in Redis with BullMQ and posts signed
+ * webhooks back as they progress. Each daemon consumes its own queue and owns
+ * its own SQLite database. Daemons keep each other in step through Redis event
+ * streams, and billing asks the usage daemon for totals on each daily run.
+ */
+interface Props {
+  fig: number | string;
+  first?: boolean | undefined;
+  sheet?: string | undefined;
+}
+
+const { fig, first = false, sheet } = Astro.props;
+
+/** Daemon boxes are labelled with the queue each one consumes. */
+const daemons = [
+  { ref: "328a", queue: "customers" },
+  { ref: "328b", queue: "msisdn" },
+  { ref: "328c", queue: "billing" },
+  { ref: "328d", queue: "subscriptions" },
+  { ref: "328e", queue: "usage" },
+];
+
+const wideDaemonX = [38, 177, 316, 455, 594];
+
+const wide: Element[] = [
+  { kind: "monitor", ref: "321", x: 24, y: 64, w: 112, h: 80, layer: 0 },
+  { kind: "block", ref: "322", x: 190, y: 50, w: 210, h: 150, layer: 0 },
+  { kind: "block", ref: "326", x: 500, y: 76, w: 150, h: 104, layer: 0 },
+  { kind: "cylinder", ref: "325", cx: 295, top: 224, rx: 46, h: 46, label: "DATABASE", layer: 0 },
+  { kind: "cylinder", ref: "327", cx: 575, top: 230, rx: 56, h: 46, label: "QUEUES", layer: 0 },
+  { kind: "frame", ref: "328", x: 24, y: 340, w: 712, h: 104, label: "DAEMONS", layer: 0 },
+  { kind: "box", ref: "323", x: 206, y: 66, w: 178, h: 56, label: "WEB INTERFACE", sub: "React · Inertia", layer: 1 },
+  { kind: "box", ref: "324", x: 206, y: 132, w: 178, h: 56, label: "APPLICATION", sub: "Laravel · RBAC", layer: 1 },
+  { kind: "text", ref: "326", x: 512, y: 104, text: "TASK GATEWAY", cls: "label", layer: 1 },
+  { kind: "text", ref: "326", x: 512, y: 123, text: "Bun · TypeScript", layer: 1 },
+  { kind: "text", ref: "326", x: 512, y: 139, text: "HTTP API · BullMQ", layer: 1 },
+  ...daemons.map(
+    (daemon, i): Element => ({
+      kind: "box",
+      ref: daemon.ref,
+      x: wideDaemonX[i] ?? 0,
+      y: 372,
+      w: 128,
+      h: 56,
+      label: daemon.queue,
+      labelClass: "repo",
+      sub: "SQLite",
+      layer: 1,
+    }),
+  ),
+  {
+    kind: "wire",
+    d: "M138 100 H204",
+    heads: [
+      [138, 100, 180],
+      [204, 100, 0],
+    ],
+    label: { x: 162, y: 92, text: "HTTPS" },
+  },
+  {
+    kind: "wire",
+    d: "M418 148 H498",
+    heads: [[498, 148, 0]],
+    label: { x: 458, y: 140, text: "TASKS" },
+  },
+  {
+    kind: "wire",
+    d: "M498 172 H418",
+    heads: [[418, 172, 180]],
+    label: { x: 458, y: 190, text: "WEBHOOKS" },
+  },
+  { kind: "wire", d: "M295 200 V215" },
+  { kind: "wire", d: "M575 180 V221" },
+  // The bus from Redis to every daemon's queue.
+  { kind: "wire", d: "M575 285 V316 M138 316 H694 M138 316 V372 M277 316 V372 M416 316 V372 M555 316 V372 M694 316 V372" },
+  // Billing publishes account events; the MSISDN daemon bars and unbars numbers from them.
+  {
+    kind: "wire",
+    d: "M340 428 V466 H241 V430",
+    heads: [[241, 429, -90]],
+    label: { x: 290, y: 483, text: "ACCOUNT EVENTS" },
+  },
+  // The subscription daemon publishes line events; billing and usage both keep a copy of every line.
+  {
+    kind: "wire",
+    d: "M519 428 V466 M392 466 H646 M392 466 V430 M646 466 V430",
+    heads: [
+      [392, 429, -90],
+      [646, 429, -90],
+    ],
+    label: { x: 519, y: 483, text: "LINE EVENTS" },
+  },
+  // Billing asks the usage daemon for totals on each daily run.
+  {
+    kind: "wire",
+    d: "M366 430 V498 H690 V430",
+    heads: [
+      [366, 429, -90],
+      [690, 429, -90],
+    ],
+    label: { x: 528, y: 516, text: "USAGE TOTALS" },
+  },
+  { kind: "leader", ref: "321", at: [30, 46], from: [58, 42], to: [72, 63] },
+  { kind: "leader", ref: "322", at: [166, 26], from: [192, 27], to: [210, 43] },
+  { kind: "leader", ref: "326", at: [668, 52], from: [642, 53], to: [630, 69], anchor: "end" },
+  { kind: "text", x: 295, y: 298, text: "SQLite", anchor: "middle" },
+  { kind: "text", x: 644, y: 252, text: "Redis" },
+  { kind: "text", x: 644, y: 268, text: "jobs · streams" },
+];
+
+const tallDaemonY = [676, 726, 800, 874, 948];
+
+const tall: Element[] = [
+  { kind: "monitor", ref: "321", x: 24, y: 40, w: 110, h: 78, layer: 0 },
+  { kind: "block", ref: "322", x: 24, y: 196, w: 262, h: 150, layer: 0 },
+  { kind: "cylinder", ref: "325", cx: 86, top: 392, rx: 50, h: 46, label: "DATABASE", layer: 0 },
+  { kind: "block", ref: "326", x: 168, y: 404, w: 150, h: 92, layer: 0 },
+  { kind: "cylinder", ref: "327", cx: 243, top: 548, rx: 56, h: 46, label: "QUEUES", layer: 0 },
+  { kind: "frame", ref: "328", x: 24, y: 640, w: 300, h: 362, label: "DAEMONS", layer: 0 },
+  { kind: "box", ref: "323", x: 40, y: 212, w: 230, h: 56, label: "WEB INTERFACE", sub: "React · Inertia", layer: 1 },
+  { kind: "box", ref: "324", x: 40, y: 278, w: 230, h: 56, label: "APPLICATION", sub: "Laravel · RBAC", layer: 1 },
+  { kind: "text", ref: "326", x: 180, y: 430, text: "TASK GATEWAY", cls: "label", layer: 1 },
+  { kind: "text", ref: "326", x: 180, y: 449, text: "Bun · TypeScript", layer: 1 },
+  { kind: "text", ref: "326", x: 180, y: 465, text: "HTTP API · BullMQ", layer: 1 },
+  ...daemons.map(
+    (daemon, i): Element => ({
+      kind: "box",
+      ref: daemon.ref,
+      x: 64,
+      y: tallDaemonY[i] ?? 0,
+      w: 150,
+      h: 40,
+      label: daemon.queue,
+      labelClass: "repo",
+      sub: "SQLite",
+      layer: 1,
+    }),
+  ),
+  {
+    kind: "wire",
+    d: "M122 120 V210",
+    heads: [
+      [122, 120, -90],
+      [122, 210, 90],
+    ],
+    label: { x: 130, y: 168, text: "HTTPS", anchor: "start" },
+  },
+  {
+    kind: "wire",
+    d: "M196 348 V402",
+    heads: [[196, 402, 90]],
+    label: { x: 188, y: 380, text: "TASKS", anchor: "end" },
+  },
+  {
+    kind: "wire",
+    d: "M250 402 V348",
+    heads: [[250, 348, -90]],
+    label: { x: 258, y: 380, text: "WEBHOOKS", anchor: "start" },
+  },
+  { kind: "wire", d: "M86 346 V383" },
+  { kind: "wire", d: "M243 496 V539" },
+  // The bus from Redis to every daemon's queue.
+  { kind: "wire", d: "M243 603 V968 M243 696 H216 M243 746 H216 M243 820 H216 M243 894 H216 M243 968 H216" },
+  {
+    kind: "wire",
+    d: "M76 800 V768",
+    heads: [[76, 768, -90]],
+    label: { x: 86, y: 788, text: "ACCOUNT EVENTS", anchor: "start" },
+  },
+  {
+    kind: "wire",
+    d: "M76 874 V842",
+    heads: [[76, 842, -90]],
+    label: { x: 86, y: 862, text: "LINE EVENTS", anchor: "start" },
+  },
+  {
+    kind: "wire",
+    d: "M76 914 V946",
+    heads: [[76, 946, 90]],
+    label: { x: 86, y: 936, text: "LINE EVENTS", anchor: "start" },
+  },
+  {
+    kind: "wire",
+    d: "M62 820 H50 V968 H62",
+    heads: [
+      [62, 820, 0],
+      [62, 968, 0],
+    ],
+    label: { x: 44, y: 894, text: "USAGE TOTALS", rotate: -90 },
+  },
+  { kind: "leader", ref: "321", at: [150, 46], from: [148, 49], to: [136, 57] },
+  { kind: "leader", ref: "322", at: [352, 174], from: [326, 176], to: [296, 190], anchor: "end" },
+  { kind: "leader", ref: "326", at: [352, 516], from: [326, 512], to: [310, 494], anchor: "end" },
+  { kind: "text", x: 86, y: 466, text: "SQLite", anchor: "middle" },
+  { kind: "text", x: 176, y: 568, text: "Redis", anchor: "end" },
+  { kind: "text", x: 176, y: 584, text: "jobs · streams", anchor: "end" },
+];
+
+const title = `Figure ${fig}: block diagram of the Telcodash stack`;
+const description =
+  "A staff member's browser 321 reaches Core 322 over HTTPS. Core holds the web interface 323 and the application 324, which handles sign-in, teams and role-based access, and keeps its own data in a database 325. Core never calls a daemon directly: it posts tasks to the task gateway 326, which checks each one against its catalogue and queues it in Redis 327 with BullMQ, then posts signed webhooks back to Core as the task progresses. Each daemon 328 consumes its own queue and owns its own SQLite database: the customer daemon 328a, MSISDN daemon 328b, billing daemon 328c, subscription daemon 328d and usage daemon 328e. Billing publishes account events that the MSISDN daemon follows to bar and unbar numbers; the subscription daemon publishes line events that billing and usage both follow; and billing asks the usage daemon for usage totals on each daily run, all over Redis.";
+---
+
+<Plate fig={fig} caption="Block diagram of the Telcodash stack" signs={telcodashSigns} sheet={sheet} transition="fig-telcodash">
+  <Diagram
+    class="plate__drawing--wide"
+    width={760}
+    height={524}
+    elements={wide}
+    title={title}
+    description={description}
+    first={first}
+  />
+  <Diagram
+    class="plate__drawing--tall"
+    width={360}
+    height={1016}
+    elements={tall}
+    title={title}
+    description={description}
+    first={first}
+  />
+</Plate>

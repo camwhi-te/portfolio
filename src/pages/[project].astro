@@ -7,11 +7,12 @@ import FalconServices from "../components/figures/FalconServices.astro";
 import JexpanelDeployment from "../components/figures/JexpanelDeployment.astro";
 import ReleaseActivity from "../components/figures/ReleaseActivity.astro";
 import RepositoryPlate from "../components/figures/RepositoryPlate.astro";
+import TelcodashStack from "../components/figures/TelcodashStack.astro";
 import Live from "../components/Live.astro";
 import Document from "../layouts/Document.astro";
 import { commitsInLastYear, getProjects, getRepo, releaseFacts } from "../lib/content.ts";
-import { falconSigns, jexpanelSigns, type Sign } from "../lib/figures.ts";
-import { formatDate, formatNumber, languageShares, ordinal, percent } from "../lib/format.ts";
+import { falconSigns, jexpanelSigns, telcodashSigns, type Sign } from "../lib/figures.ts";
+import { formatDate, formatNumber, languageShares, percent } from "../lib/format.ts";
 import type { RepoEntry } from "../lib/github/schema.ts";
 import { section } from "../lib/nav.ts";
 import { hasText, linkNumerals } from "../lib/refs.ts";
@@ -35,6 +36,7 @@ const related = (await Promise.all(data.related.map((name) => getRepo(name)))).f
 );
 const isJexpanel = project.id === "jexpanel";
 const isFalcon = project.id === "falcon-hosting";
+const isTelcodash = project.id === "telcodash";
 const { latest, lastYear } = releaseFacts(repo);
 
 // The parts drawn on this page, whose numerals become live links in the description.
@@ -42,9 +44,11 @@ const parts: Sign[] = isJexpanel
   ? jexpanelSigns
   : isFalcon
     ? falconSigns("/jexpanel/")
-    : [repo, ...related]
-        .filter((entry): entry is RepoEntry => entry !== undefined)
-        .map((entry, position) => ({ n: data.numeral + 2 * (position + 1), name: entry.fullName }));
+    : isTelcodash
+      ? telcodashSigns
+      : [repo, ...related]
+          .filter((entry): entry is RepoEntry => entry !== undefined)
+          .map((entry, position) => ({ n: data.numeral + 2 * (position + 1), name: entry.fullName }));
 
 const figures: string[] = isJexpanel
   ? [
@@ -53,7 +57,9 @@ const figures: string[] = isJexpanel
     ]
   : isFalcon
     ? ["is a block diagram of the service lines of Falcon Hosting, from its public site."]
-    : repo
+    : isTelcodash
+      ? ["is a block diagram of the Telcodash stack, showing how Core, the task gateway and the daemons communicate."]
+      : repo
       ? [`shows the ${related.length ? "repositories" : "repository"} of ${data.title}, with ${related.length ? "their" : "its"} language composition.`]
       : [];
 
@@ -141,7 +147,7 @@ const after = section(400);
             <>
               <dt>Standing</dt>
               <dd>
-                <strong>{formatNumber(repo.contributor.contributions)} contributions</strong>, the {ordinal(repo.contributor.rank)} most of any contributor; {formatNumber(commitsInLastYear(repo))} commits in the past year
+                <strong>{formatNumber(repo.contributor.contributions)} contributions</strong>, {formatNumber(commitsInLastYear(repo))} commits in the past year
               </dd>
             </>
           )
@@ -197,7 +203,8 @@ const after = section(400);
       <div style="margin-block-start: 2rem">
         {isJexpanel && <JexpanelDeployment fig={1} first />}
         {isFalcon && <FalconServices fig={1} jexpanelHref="/jexpanel/" jexpanelNote="Own specification" />}
-        {!isJexpanel && !isFalcon && repo && (
+        {isTelcodash && <TelcodashStack fig={1} first />}
+        {!isJexpanel && !isFalcon && !isTelcodash && repo && (
           <RepositoryPlate fig={1} numeral={data.numeral} title={data.title} repos={[repo, ...related]} />
         )}
       </div>

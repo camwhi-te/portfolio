@@ -186,8 +186,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
                 <>
                   <dt>Standing</dt>
                   <dd>
-                    <strong>{formatNumber(standing.contributions)} contributions</strong>, the {ordinal(standing.rank)} most of any
-                    contributor; {formatNumber(commitsInLastYear(jexRepo))} commits in the past year
+                    <strong>{formatNumber(standing.contributions)} contributions</strong>, {formatNumber(commitsInLastYear(jexRepo))} commits in the past year
                   </dd>
                 </>
               )}

@@ -25,8 +25,8 @@ export const site: Site = {
   github: "https://github.com/camwhi-te",
 
   // Yours to write -----------------------------------------------------------
-  role: "",
-  location: "",
-  email: "",
-  linkedin: "",
+  role: "Student software engineer for telecommunications and billing infrastructure",
+  location: "South East England, UK",
+  email: "mail@cameronwhite.co.uk",
+  linkedin: "www.linkedin.com/in/camwhi-te",
 };

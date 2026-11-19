@@ -25,7 +25,23 @@ export const jexpanelSigns: Sign[] = [
   { n: 140, name: "payment providers" },
 ];
 
-export const falconSigns = (jexpanelHref: string): Sign[] => [
+export const telcodashSigns: Sign[] = [
+  { n: 321, name: "user's browser" },
+  { n: 322, name: "Core (staff application)" },
+  { n: 323, name: "web interface" },
+  { n: 324, name: "application, sign-in and RBAC" },
+  { n: 325, name: "Core database" },
+  { n: 326, name: "task gateway" },
+  { n: 327, name: "Redis queues and event streams" },
+  { n: 328, name: "daemons, each with its own queue and SQLite database" },
+  { n: "328a", name: "customer daemon" },
+  { n: "328b", name: "MSISDN daemon" },
+  { n: "328c", name: "billing daemon" },
+  { n: "328d", name: "subscription daemon" },
+  { n: "328e", name: "usage daemon" },
+];
+
+export const falconSigns =(jexpanelHref: string): Sign[] => [
   { n: 200, name: "Falcon Hosting Ltd", cross: true, href: "#ref-200" },
   { n: 210, name: "game servers" },
   { n: 212, name: "Minecraft servers" },
