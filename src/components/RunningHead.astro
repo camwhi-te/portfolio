@@ -1,0 +1,51 @@
+---
+import { site } from "../site.ts";
+
+/**
+ * The running head: handle, the numeral index of the whole site, and the
+ * sheet counter, which follows the reader down the page.
+ */
+interface Props {
+  /** Numeral of the page or section being read, for aria-current. */
+  current?: number | undefined;
+  sheets: number;
+}
+
+const { current, sheets } = Astro.props;
+
+const items = [
+  { n: 100, label: "Jexpanel", href: "/jexpanel/" },
+  { n: 200, label: "Falcon Hosting", href: "/falcon-hosting/" },
+  { n: 300, label: "Further work", href: "/#ref-300" },
+  { n: 400, label: "Experience", href: "/#ref-400" },
+  { n: 500, label: "Correspondence", href: "/#ref-500" },
+];
+---
+
+<header class="running-head">
+  <div class="running-head__inner">
+    <a class="running-head__home" href="/" aria-label={`${site.name}, front page`}>{site.handle}</a>
+    <nav class="running-head__nav" aria-label="Index">
+      <ol>
+        {
+          items.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                data-ref={String(item.n)}
+                aria-current={current === item.n ? "page" : undefined}
+                aria-label={`${item.n}, ${item.label}`}
+              >
+                <span class="n">({item.n})</span>
+                <span class="label">{item.label}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+    <p class="running-head__sheet" aria-live="off">
+      Sheet <output data-sheet-current>1</output> of <span data-sheet-total>{sheets}</span>
+    </p>
+  </div>
+</header>

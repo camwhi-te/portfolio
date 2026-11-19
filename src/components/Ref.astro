@@ -1,0 +1,21 @@
+---
+/**
+ * A reference numeral. Pointing at it lights every instance of the same
+ * numeral on the page (drawings, lists, text); following it deep-links to the part.
+ */
+interface Props {
+  n: number | string;
+  /** The part it names, read out with the numeral. */
+  name: string;
+  href?: string | undefined;
+  /** Set in parentheses, as the index and running head do. */
+  paren?: boolean | undefined;
+  class?: string | undefined;
+}
+
+const { n, name, href = `#ref-${n}`, paren = false, class: className } = Astro.props;
+---
+
+<a class:list={["ref", className]} href={href} data-ref={String(n)} aria-label={`${n}, ${name}`}
+  >{paren ? `(${n})` : n}</a
+>

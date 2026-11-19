@@ -1,0 +1,267 @@
+---
+import { monthlyCommits, releaseFacts } from "../../lib/content.ts";
+import { niceMax, scale } from "../../lib/drawing.ts";
+import { formatDate, formatLongMonth, formatMonth, releaseLevel } from "../../lib/format.ts";
+import type { RepoEntry } from "../../lib/github/schema.ts";
+import Plate from "../Plate.astro";
+
+/**
+ * FIG: release history of a repository above the tracked user's commits per
+ * month, on one shared time axis. Stem height encodes the semver level of a
+ * release; an open head marks a pre-release.
+ */
+interface Props {
+  fig: number | string;
+  repo: RepoEntry;
+  user: string;
+  sheet?: string | undefined;
+}
+
+const { fig, repo, user, sheet } = Astro.props;
+
+const { releases } = releaseFacts(repo);
+const ascending = [...releases].reverse();
+const months = monthlyCommits(repo);
+const firstMonth = months[0]?.month ?? ascending[0]?.publishedAt.slice(0, 7) ?? repo.createdAt.slice(0, 7);
+const [startYear, startMonth] = firstMonth.split("-").map(Number) as [number, number];
+const start = Date.UTC(startYear, startMonth - 1, 1);
+const fetched = new Date(repo.fetchedAt);
+const end = Date.UTC(fetched.getUTCFullYear(), fetched.getUTCMonth() + 1, 1);
+const peak = months.reduce((best, month) => (month.commits > best.commits ? month : best), {
+  month: firstMonth,
+  commits: 0,
+});
+const top = niceMax(peak.commits);
+const firstMajor = ascending.find((release) => releaseLevel(release.tag, release.prerelease) === "major");
+const latestMajor = [...ascending].reverse().find((release) => releaseLevel(release.tag, release.prerelease) === "major");
+
+interface Layout {
+  name: "wide" | "tall";
+  width: number;
+  height: number;
+  left: number;
+  right: number;
+  aBase: number;
+  bTop: number;
+  bBase: number;
+  axisY: number;
+  stems: Record<"major" | "minor" | "patch" | "pre", number>;
+}
+
+const layouts: Layout[] = [
+  {
+    name: "wide",
+    width: 760,
+    height: 372,
+    left: 44,
+    right: 748,
+    aBase: 132,
+    bTop: 186,
+    bBase: 330,
+    axisY: 352,
+    stems: { major: 86, minor: 62, patch: 40, pre: 62 },
+  },
+  {
+    name: "tall",
+    width: 360,
+    height: 392,
+    left: 34,
+    right: 350,
+    aBase: 128,
+    bTop: 186,
+    bBase: 348,
+    axisY: 370,
+    stems: { major: 78, minor: 56, patch: 34, pre: 56 },
+  },
+];
+
+function geometry(layout: Layout) {
+  const x = scale([start, end], [layout.left, layout.right]);
+  const y = scale([0, top], [layout.bBase, layout.bTop]);
+  const monthMarks = months.map((month) => {
+    const [yy, mm] = month.month.split("-").map(Number) as [number, number];
+    return {
+      x: x(Date.UTC(yy, mm - 1, 15)),
+      top: y(month.commits),
+      value: month.commits,
+      label: formatLongMonth(`${month.month}-15T00:00:00Z`),
+    };
+  });
+  const releaseMarks = ascending.map((release) => {
+    const level = releaseLevel(release.tag, release.prerelease);
+    return {
+      x: x(Date.parse(release.publishedAt)),
+      top: layout.aBase - layout.stems[level],
+      level,
+      tag: release.tag,
+      date: formatDate(release.publishedAt),
+    };
+  });
+  const years: { x: number; label: string; center: number }[] = [];
+  for (let year = startYear + 1; Date.UTC(year, 0, 1) < end; year++) {
+    years.push({ x: x(Date.UTC(year, 0, 1)), label: String(year), center: 0 });
+  }
+  const yearSpans = [startYear, ...years.map((entry) => Number(entry.label))].map((year) => {
+    const from = Math.max(Date.UTC(year, 0, 1), start);
+    const to = Math.min(Date.UTC(year + 1, 0, 1), end);
+    return { label: String(year), center: x((from + to) / 2), width: x(to) - x(from) };
+  });
+  const ticks = [0, top / 2, top].map((value) => ({ value, y: y(value) }));
+  const marker = latestMajor ? x(Date.parse(latestMajor.publishedAt)) : null;
+  const series = JSON.stringify({
+    months: monthMarks.map((mark) => [mark.x, mark.label, mark.value]),
+    releases: releaseMarks.map((mark) => [mark.x, mark.tag, mark.date, mark.level]),
+  });
+  return { monthMarks, releaseMarks, years, yearSpans, ticks, marker, series };
+}
+
+const title = `Figure ${fig}: releases of ${repo.fullName} and monthly commits by ${user}`;
+const description = `Top: ${releases.length} releases from ${ascending[0]?.tag ?? ""} (${ascending[0] ? formatMonth(ascending[0].publishedAt) : ""}) to ${releases[0]?.tag ?? ""} (${releases[0] ? formatMonth(releases[0].publishedAt) : ""}). Bottom: commits by ${user} per month, peaking at ${peak.commits} in ${formatLongMonth(`${peak.month}-15T00:00:00Z`)}.`;
+const keySize = 14;
+---
+
+<Plate fig={fig} caption={`Releases of ${repo.fullName} (above) and commits by ${user} per month (below)`} sheet={sheet}>
+  {
+    layouts.map((layout) => {
+      const g = geometry(layout);
+      return (
+        <div class:list={["chart", `plate__drawing--${layout.name}`]}>
+          <div class="chart__canvas" tabindex="0" role="group" aria-label={`${title}. Use the arrow keys to step through months; hold Shift to step through releases.`}>
+            <svg
+              class="drawing"
+              viewBox={`0 0 ${layout.width} ${layout.height}`}
+              role="img"
+              aria-label={title}
+              data-series={g.series}
+              data-user={user}
+              data-base-a={layout.aBase}
+              data-top-b={layout.bTop}
+              data-base-b={layout.bBase}
+            >
+              <desc>{description}</desc>
+              <g class="grid" style="--layer: 0">
+                {g.years.map((year) => (
+                  <>
+                    <line x1={year.x} x2={year.x} y1={26} y2={layout.aBase} />
+                    <line x1={year.x} x2={year.x} y1={layout.bTop - 4} y2={layout.bBase} />
+                  </>
+                ))}
+                {g.ticks.slice(1).map((tick) => (
+                  <line x1={layout.left} x2={layout.right} y1={tick.y} y2={tick.y} />
+                ))}
+              </g>
+              <text class="axis caps" x={layout.left} y={16} style="--layer: 0">
+                RELEASES
+              </text>
+              <text class="axis caps" x={layout.left} y={layout.bTop - 12} style="--layer: 0">
+                COMMITS PER MONTH
+              </text>
+              {g.ticks.map((tick) => (
+                <text class="axis" x={layout.left - 7} y={tick.y + 4} text-anchor="end" style="--layer: 0">
+                  {tick.value}
+                </text>
+              ))}
+              {g.yearSpans
+                .filter((span) => span.width > 30)
+                .map((span) => (
+                  <text class="axis" x={span.center} y={layout.axisY} text-anchor="middle" style="--layer: 0">
+                    {span.label}
+                  </text>
+                ))}
+              <line class="ink baseline" x1={layout.left} x2={layout.right} y1={layout.aBase} y2={layout.aBase} pathLength="1" style="--layer: 0" />
+              <line class="ink baseline" x1={layout.left} x2={layout.right} y1={layout.bBase} y2={layout.bBase} pathLength="1" style="--layer: 0" />
+              <g style="--layer: 1">
+                {g.releaseMarks.map((mark, index) => (
+                  <g data-release={index}>
+                    <line class:list={["ink stem", mark.level === "pre" && "pre"]} x1={mark.x} x2={mark.x} y1={layout.aBase} y2={mark.top + 2.6} pathLength="1" />
+                    <circle class:list={["head", mark.level === "pre" && "pre"]} cx={mark.x} cy={mark.top} r="2.8" />
+                  </g>
+                ))}
+              </g>
+              <g style="--layer: 2">
+                {g.monthMarks.map((mark, index) =>
+                  mark.value > 0 ? (
+                    <line class="ink stem" data-month={index} x1={mark.x} x2={mark.x} y1={layout.bBase} y2={mark.top} pathLength="1" />
+                  ) : null,
+                )}
+              </g>
+              {g.marker !== null && latestMajor && (
+                <g style="--layer: 3">
+                  <line class="marker" x1={g.marker} x2={g.marker} y1={layout.aBase} y2={layout.bBase} />
+                </g>
+              )}
+              <g style="--layer: 3">
+                {g.releaseMarks
+                  .filter((mark) => mark.tag === firstMajor?.tag || mark.tag === latestMajor?.tag)
+                  .map((mark) => (
+                    <text class="axis" x={mark.x} y={mark.top - 8} text-anchor={mark.x < layout.left + 30 ? "start" : "middle"}>
+                      {mark.tag}
+                    </text>
+                  ))}
+                {g.monthMarks
+                  .filter((mark) => mark.value === peak.commits && peak.commits > 0)
+                  .slice(0, 1)
+                  .map((mark) => (
+                    <text class="axis" x={mark.x} y={mark.top - 7} text-anchor="middle">
+                      {mark.value}
+                    </text>
+                  ))}
+              </g>
+              <line class="crosshair" x1="0" x2="0" y1={14} y2={layout.bBase} />
+              <rect class="hit" data-panel="releases" x={layout.left} y={14} width={layout.right - layout.left} height={layout.aBase - 14 + 8} />
+              <rect class="hit" data-panel="months" x={layout.left} y={layout.bTop - 8} width={layout.right - layout.left} height={layout.bBase - layout.bTop + 8} />
+            </svg>
+          </div>
+        </div>
+      );
+    })
+  }
+  <Fragment slot="after">
+    <p class="chart__readout" aria-live="polite">Point at a month or a release to read it.</p>
+    <div class="chart__key" aria-hidden="true">
+      <span>
+        <svg width={keySize} height={keySize} viewBox="0 0 14 14"><line x1="7" x2="7" y1="14" y2="4" stroke="#191e2e" stroke-width="2"></line><circle cx="7" cy="3.2" r="2.6" fill="#191e2e"></circle></svg>
+        release (taller: major, then minor, then patch)
+      </span>
+      <span>
+        <svg width={keySize} height={keySize} viewBox="0 0 14 14"><line x1="7" x2="7" y1="14" y2="5" stroke="#191e2e" stroke-width="1.25"></line><circle cx="7" cy="3.2" r="2.6" fill="#f7f9fb" stroke="#191e2e" stroke-width="1.25"></circle></svg>
+        pre-release
+      </span>
+      {
+        latestMajor && (
+          <span>
+            <svg width={keySize} height={keySize} viewBox="0 0 14 14"><line x1="7" x2="7" y1="0" y2="14" stroke="#2c6a87" stroke-width="1"></line></svg>
+            {latestMajor.tag}, carried down to the commits
+          </span>
+        )
+      }
+    </div>
+    <details class="table-view">
+      <summary>Show the figures as tables</summary>
+      <div class="table-view__scroll">
+        <table>
+          <caption>Commits by {user} per month</caption>
+          <thead>
+            <tr><th scope="col">Month</th><th scope="col" class="num">Commits</th></tr>
+          </thead>
+          <tbody>
+            {[...months].reverse().map((month) => (
+              <tr><td>{formatLongMonth(`${month.month}-15T00:00:00Z`)}</td><td class="num">{month.commits}</td></tr>
+            ))}
+          </tbody>
+        </table>
+        <table>
+          <caption>Releases of {repo.fullName}</caption>
+          <thead>
+            <tr><th scope="col">Release</th><th scope="col">Published</th></tr>
+          </thead>
+          <tbody>
+            {releases.map((release) => (
+              <tr><td><a href={release.url}>{release.tag}</a>{release.prerelease ? " (pre-release)" : ""}</td><td>{formatDate(release.publishedAt)}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </Fragment>
+</Plate>

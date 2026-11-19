@@ -1,0 +1,98 @@
+---
+import { falconSigns } from "../../lib/figures.ts";
+import Plate from "../Plate.astro";
+import Diagram, { type Element } from "./Diagram.astro";
+
+/**
+ * FIG: Falcon Hosting's service lines, as listed publicly on
+ * falconhosting.co.uk (November 2026), including web-app hosting of
+ * Jexpanel, which ties this figure to the Jexpanel drawing (100).
+ */
+interface Props {
+  fig: number | string;
+  /** Where the Jexpanel cross-reference points, and how it is described. */
+  jexpanelHref: string;
+  jexpanelNote: string;
+  sheet?: string | undefined;
+}
+
+const { fig, jexpanelHref, jexpanelNote, sheet } = Astro.props;
+
+const wide: Element[] = [
+  { kind: "block", ref: "200", x: 24, y: 154, w: 206, h: 104, layer: 0 },
+  { kind: "text", ref: "200", x: 36, y: 182, text: "FALCON HOSTING LTD", cls: "label", layer: 1 },
+  { kind: "text", ref: "200", x: 36, y: 201, text: "Company No. 15676555", layer: 1 },
+  { kind: "text", ref: "200", x: 36, y: 217, text: "England & Wales", layer: 1 },
+  { kind: "frame", ref: "210", x: 286, y: 22, w: 236, h: 202, label: "GAME SERVERS", layer: 0 },
+  { kind: "frame", ref: "220", x: 286, y: 236, w: 236, h: 166, label: "INFRASTRUCTURE", layer: 0 },
+  {
+    kind: "box",
+    ref: "212",
+    x: 300,
+    y: 54,
+    w: 208,
+    h: 62,
+    label: "MINECRAFT",
+    sub: "Java · Bedrock · modpacks",
+    sub2: "UK and EU",
+    layer: 1,
+  },
+  { kind: "box", ref: "214", x: 300, y: 126, w: 208, h: 40, label: "RUST", sub: "Vanilla · Oxide · Carbon", layer: 1 },
+  { kind: "box", ref: "216", x: 300, y: 176, w: 208, h: 40, label: "HYTALE", sub: "UK", layer: 1 },
+  { kind: "box", ref: "222", x: 300, y: 268, w: 208, h: 38, label: "VPS", sub: "UK · AMD Ryzen", layer: 1 },
+  { kind: "box", ref: "224", x: 300, y: 312, w: 208, h: 38, label: "CONTAINERS", sub: "Your own Docker image", layer: 1 },
+  { kind: "box", ref: "226", x: 300, y: 356, w: 208, h: 38, label: "WEB APPS", sub: "Ready-made apps", layer: 1 },
+  { kind: "box", ref: "230", x: 554, y: 22, w: 202, h: 58, label: "MANAGED IT", sub: "IT support for businesses", layer: 0 },
+  { kind: "box", ref: "100", x: 554, y: 346, w: 202, h: 56, label: "JEXPANEL", sub: jexpanelNote, fine: true, layer: 0 },
+  { kind: "wire", d: "M246 206 H264 M264 116 V300 M264 116 H286 M264 300 H286" },
+  { kind: "wire", d: "M116 148 V8 H652 V22" },
+  { kind: "wire", d: "M508 375 H552", heads: [[552, 375, 0]], label: { x: 530, y: 366, text: "HOSTS" } },
+  { kind: "leader", ref: "200", at: [24, 128], from: [50, 124], to: [66, 148] },
+];
+
+const tall: Element[] = [
+  { kind: "block", ref: "200", x: 20, y: 44, w: 300, h: 92, depth: 14, layer: 0 },
+  { kind: "text", ref: "200", x: 32, y: 70, text: "FALCON HOSTING LTD", cls: "label", layer: 1 },
+  { kind: "text", ref: "200", x: 32, y: 89, text: "Company No. 15676555", layer: 1 },
+  { kind: "text", ref: "200", x: 32, y: 105, text: "England & Wales", layer: 1 },
+  { kind: "frame", ref: "210", x: 56, y: 168, w: 290, h: 200, label: "GAME SERVERS", layer: 0 },
+  {
+    kind: "box",
+    ref: "212",
+    x: 70,
+    y: 200,
+    w: 262,
+    h: 62,
+    label: "MINECRAFT",
+    sub: "Java · Bedrock · modpacks",
+    sub2: "UK and EU",
+    layer: 1,
+  },
+  { kind: "box", ref: "214", x: 70, y: 270, w: 262, h: 40, label: "RUST", sub: "Vanilla · Oxide · Carbon", layer: 1 },
+  { kind: "box", ref: "216", x: 70, y: 318, w: 262, h: 40, label: "HYTALE", sub: "UK", layer: 1 },
+  { kind: "box", ref: "230", x: 56, y: 392, w: 290, h: 56, label: "MANAGED IT", sub: "IT support for businesses", layer: 0 },
+  { kind: "frame", ref: "220", x: 56, y: 472, w: 290, h: 166, label: "INFRASTRUCTURE", layer: 0 },
+  { kind: "box", ref: "222", x: 70, y: 504, w: 262, h: 38, label: "VPS", sub: "UK · AMD Ryzen", layer: 1 },
+  { kind: "box", ref: "224", x: 70, y: 548, w: 262, h: 38, label: "CONTAINERS", sub: "Your own Docker image", layer: 1 },
+  { kind: "box", ref: "226", x: 70, y: 592, w: 262, h: 38, label: "WEB APPS", sub: "Ready-made apps", layer: 1 },
+  { kind: "box", ref: "100", x: 120, y: 676, w: 226, h: 54, label: "JEXPANEL", sub: jexpanelNote, fine: true, layer: 0 },
+  { kind: "wire", d: "M40 136 V555 M40 268 H56 M40 420 H56 M40 555 H56" },
+  { kind: "wire", d: "M300 630 V674", heads: [[300, 674, 90]], label: { x: 308, y: 658, text: "HOSTS", anchor: "start" } },
+  { kind: "leader", ref: "200", at: [352, 22], from: [326, 24], to: [306, 38], anchor: "end" },
+];
+
+const title = `Figure ${fig}: Falcon Hosting's service lines`;
+const description =
+  "Falcon Hosting Ltd 200 runs game servers 210 (Minecraft 212 for Java, Bedrock and modpacks in the UK and EU, Rust 214, Hytale 216 in the UK), infrastructure 220 (UK virtual private servers 222 on AMD Ryzen, container hosting 224 and web-app hosting 226) and managed IT 230. Web-app hosting 226 hosts ready-made apps including Jexpanel 100.";
+---
+
+<Plate
+  fig={fig}
+  caption="Service lines of Falcon Hosting, from its public site"
+  signs={falconSigns(jexpanelHref)}
+  sheet={sheet}
+  transition="fig-falcon"
+>
+  <Diagram class="plate__drawing--wide" width={760} height={412} elements={wide} title={title} description={description} />
+  <Diagram class="plate__drawing--tall" width={360} height={744} elements={tall} title={title} description={description} />
+</Plate>

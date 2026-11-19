@@ -1,0 +1,171 @@
+---
+import Plate from "../Plate.astro";
+import { jexpanelSigns } from "../../lib/figures.ts";
+import Diagram, { type Element } from "./Diagram.astro";
+
+/**
+ * FIG: a Jexpanel deployment. Jexpanel is built on Pterodactyl Panel, so it
+ * keeps that architecture: a Laravel and React panel with its database and
+ * cache, and a daemon on each node that runs game servers in Docker
+ * containers. The browser talks to the panel over HTTPS and opens the server
+ * console straight to the daemon over a WebSocket.
+ */
+interface Props {
+  fig: number | string;
+  first?: boolean | undefined;
+  sheet?: string | undefined;
+}
+
+const { fig, first = false, sheet } = Astro.props;
+
+const wide: Element[] = [
+  { kind: "monitor", ref: "130", x: 24, y: 150, w: 122, h: 86, layer: 0 },
+  { kind: "block", ref: "102", x: 214, y: 78, w: 236, h: 230, layer: 0 },
+  { kind: "block", ref: "120", x: 564, y: 78, w: 176, h: 230, layer: 0 },
+  { kind: "box", ref: "140", x: 24, y: 316, w: 146, h: 60, label: "PAYMENTS", sub: "Stripe · PayPal", layer: 0 },
+  { kind: "cylinder", ref: "110", cx: 272, top: 346, rx: 46, h: 46, label: "DATABASE", layer: 0 },
+  { kind: "cylinder", ref: "116", cx: 392, top: 346, rx: 46, h: 46, label: "CACHE", layer: 0 },
+  { kind: "box", ref: "112", x: 232, y: 96, w: 200, h: 56, label: "WEB INTERFACE", sub: "React · TypeScript", layer: 1 },
+  { kind: "box", ref: "114", x: 232, y: 164, w: 200, h: 56, label: "APPLICATION & API", sub: "Laravel · PHP", layer: 1 },
+  { kind: "box", ref: "104", x: 232, y: 232, w: 200, h: 56, label: "BILLING", layer: 1 },
+  { kind: "box", ref: "106", x: 576, y: 96, w: 150, h: 56, label: "NODE DAEMON", sub: "Wings API", layer: 1 },
+  { kind: "box", ref: "108", numeral: "108a", x: 584, y: 174, w: 150, h: 32, label: "CONTAINER", layer: 1 },
+  { kind: "box", ref: "108", numeral: "108b", x: 584, y: 216, w: 150, h: 32, label: "CONTAINER", layer: 1 },
+  { kind: "box", ref: "108", numeral: "108c", x: 584, y: 258, w: 150, h: 32, label: "CONTAINER", layer: 1 },
+  {
+    kind: "wire",
+    d: "M146 178 H206 V124 H230",
+    heads: [
+      [146, 178, 180],
+      [230, 124, 0],
+    ],
+    label: { x: 176, y: 171, text: "HTTPS" },
+  },
+  {
+    kind: "wire",
+    d: "M85 150 V26 H644 V62",
+    heads: [
+      [85, 150, 90],
+      [644, 62, 90],
+    ],
+    label: { x: 364, y: 18, text: "WEBSOCKET CONSOLE" },
+  },
+  {
+    kind: "wire",
+    d: "M468 124 H574",
+    heads: [
+      [468, 124, 180],
+      [574, 124, 0],
+    ],
+    label: { x: 517, y: 116, text: "DAEMON API" },
+  },
+  {
+    kind: "wire",
+    d: "M170 346 H214 V260 H230",
+    heads: [
+      [170, 346, 180],
+      [230, 260, 0],
+    ],
+    label: { x: 194, y: 306, text: "PAYMENT API", anchor: "end" },
+  },
+  { kind: "wire", d: "M272 308 V337" },
+  { kind: "wire", d: "M392 308 V337" },
+  { kind: "wire", d: "M580 152 V274 M580 190 H584 M580 232 H584 M580 274 H584" },
+  { kind: "leader", ref: "130", at: [30, 132], from: [58, 128], to: [72, 149] },
+  { kind: "leader", ref: "102", at: [190, 54], from: [216, 55], to: [234, 71] },
+  { kind: "leader", ref: "120", at: [758, 54], from: [732, 55], to: [720, 71], anchor: "end" },
+  { kind: "text", x: 272, y: 422, text: "MySQL · MariaDB", anchor: "middle" },
+  { kind: "text", x: 392, y: 422, text: "Redis", anchor: "middle" },
+];
+
+const tall: Element[] = [
+  { kind: "monitor", ref: "130", x: 34, y: 40, w: 110, h: 78, layer: 0 },
+  { kind: "box", ref: "140", x: 200, y: 60, w: 146, h: 58, label: "PAYMENTS", sub: "Stripe · PayPal", layer: 0 },
+  { kind: "block", ref: "102", x: 24, y: 200, w: 262, h: 226, layer: 0 },
+  { kind: "cylinder", ref: "110", cx: 86, top: 474, rx: 52, h: 46, label: "DATABASE", layer: 0 },
+  { kind: "cylinder", ref: "116", cx: 206, top: 474, rx: 50, h: 46, label: "CACHE", layer: 0 },
+  { kind: "block", ref: "120", x: 24, y: 600, w: 262, h: 160, layer: 0 },
+  { kind: "box", ref: "112", x: 40, y: 216, w: 230, h: 56, label: "WEB INTERFACE", sub: "React · TypeScript", layer: 1 },
+  { kind: "box", ref: "114", x: 40, y: 282, w: 230, h: 56, label: "APPLICATION & API", sub: "Laravel · PHP", layer: 1 },
+  { kind: "box", ref: "104", x: 40, y: 348, w: 230, h: 56, label: "BILLING", layer: 1 },
+  { kind: "box", ref: "106", x: 40, y: 616, w: 230, h: 50, label: "NODE DAEMON", sub: "Wings API", layer: 1 },
+  { kind: "box", ref: "108", numeral: "108a", x: 58, y: 676, w: 212, h: 22, label: "CONTAINER", layer: 1 },
+  { kind: "box", ref: "108", numeral: "108b", x: 58, y: 702, w: 212, h: 22, label: "CONTAINER", layer: 1 },
+  { kind: "box", ref: "108", numeral: "108c", x: 58, y: 728, w: 212, h: 22, label: "CONTAINER", layer: 1 },
+  {
+    kind: "wire",
+    d: "M130 120 V214",
+    heads: [
+      [130, 120, -90],
+      [130, 214, 90],
+    ],
+    label: { x: 138, y: 168, text: "HTTPS", anchor: "start" },
+  },
+  {
+    kind: "wire",
+    d: "M318 120 V376 H272",
+    heads: [
+      [318, 120, -90],
+      [272, 376, 180],
+    ],
+    label: { x: 330, y: 250, text: "PAYMENT API", rotate: 90 },
+  },
+  {
+    kind: "wire",
+    d: "M34 80 H12 V641 H38",
+    heads: [
+      [34, 80, 0],
+      [38, 641, 0],
+    ],
+    label: { x: 7, y: 470, text: "WEBSOCKET CONSOLE", rotate: -90 },
+  },
+  {
+    kind: "wire",
+    d: "M264 428 V614",
+    heads: [
+      [264, 428, -90],
+      [264, 614, 90],
+    ],
+    label: { x: 256, y: 574, text: "DAEMON API", anchor: "end" },
+  },
+  { kind: "wire", d: "M86 426 V465" },
+  { kind: "wire", d: "M206 426 V465" },
+  { kind: "wire", d: "M48 666 V739 M48 687 H58 M48 713 H58 M48 739 H58" },
+  { kind: "leader", ref: "130", at: [160, 46], from: [158, 49], to: [146, 57] },
+  { kind: "leader", ref: "102", at: [352, 178], from: [326, 180], to: [296, 194], anchor: "end" },
+  { kind: "leader", ref: "120", at: [352, 578], from: [326, 580], to: [296, 594], anchor: "end" },
+  { kind: "text", x: 86, y: 548, text: "MySQL · MariaDB", anchor: "middle" },
+  { kind: "text", x: 206, y: 548, text: "Redis", anchor: "middle" },
+];
+
+const title = `Figure ${fig}: block diagram of a Jexpanel deployment`;
+const description =
+  "A user's browser 130 reaches the panel 102 over HTTPS. The panel holds the web interface 112, the application and API 114 and billing 104, which talks to payment providers 140. The panel keeps its data in a database 110 and a cache and queue 116, and drives the daemon 106 on each node 120 through the daemon API. The daemon runs game servers in containers 108a to 108c, and the browser opens each server's console directly to the daemon over a WebSocket.";
+---
+
+<Plate
+  fig={fig}
+  caption="Block diagram of a Jexpanel deployment"
+  signs={jexpanelSigns}
+  sheet={sheet}
+  transition="fig-jexpanel"
+>
+  <Diagram
+    class="plate__drawing--wide"
+    width={760}
+    height={430}
+    elements={wide}
+    title={title}
+    description={description}
+    first={first}
+  />
+  <Diagram
+    class="plate__drawing--tall"
+    width={360}
+    height={772}
+    elements={tall}
+    title={title}
+    description={description}
+    first={first}
+  />
+</Plate>

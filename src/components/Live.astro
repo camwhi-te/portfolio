@@ -1,0 +1,13 @@
+---
+/** A GitHub figure fixed at build time that the browser refreshes (see scripts/live-figures.ts). */
+interface Props {
+  repo: string;
+  field: "stars" | "forks" | "openIssues" | "release" | "releaseDate" | "pushed";
+  value: string | number;
+  display: string;
+}
+
+const { repo, field, value, display } = Astro.props;
+---
+
+<data data-live-repo={repo} data-live-field={field} value={String(value)}>{display}</data>

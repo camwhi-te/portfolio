@@ -1,0 +1,90 @@
+---
+import { Font } from "astro:assets";
+import InkDefs from "../components/InkDefs.astro";
+import RunningHead from "../components/RunningHead.astro";
+import { getProvenance } from "../lib/content.ts";
+import { formatStamp } from "../lib/format.ts";
+import { site } from "../site.ts";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  /** Numeral of the section this page files under, for the running head. */
+  current?: number | undefined;
+  sheets: number;
+}
+
+const { title, description, current, sheets } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url);
+const provenance = await getProvenance();
+const built = new Date().toISOString();
+const sameAs = [site.github, site.linkedin].filter(Boolean);
+const person = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: site.name,
+  alternateName: site.handle,
+  url: site.url,
+  sameAs,
+  ...(site.role ? { jobTitle: site.role } : {}),
+};
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#f7f9fb" />
+    <meta name="color-scheme" content="light" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <Font cssVariable="--font-text" preload={[{ weight: "400", style: "normal" }]} />
+    <Font cssVariable="--font-mono" />
+    <script is:inline>
+      // Motion is opted into before first paint, so drawings never flash.
+      // Automated browsers (screenshots, audits) get the settled page.
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches && !navigator.webdriver) {
+        document.documentElement.classList.add("motion");
+      }
+    </script>
+    <script type="application/ld+json" set:html={JSON.stringify(person)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to the text</a>
+    <InkDefs />
+    <RunningHead current={current} sheets={sheets} />
+    <main id="main" class="page">
+      <slot />
+    </main>
+    <footer class="colophon">
+      <p>
+        Set in STIX Two Text and Courier Prime. Built with Astro on {formatStamp(built)}.
+      </p>
+      {
+        provenance && (
+          <p>
+            GitHub figures as of <time data-live-asof="Jexactyl/Jexactyl" datetime={provenance.fetchedAt}>{formatStamp(provenance.fetchedAt)}</time>{provenance.source === "snapshot" ? ", from the committed snapshot" : ""}.
+          </p>
+        )
+      }
+      <p>
+        <a href={site.github}>github.com/{site.handle}</a>
+      </p>
+    </footer>
+    {import.meta.env.DEV && <p class="author-hint" aria-hidden="true">Press B: show where each blank is filled in</p>}
+    <script>
+      import "../scripts/main.ts";
+    </script>
+  </body>
+</html>

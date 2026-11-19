@@ -1,0 +1,29 @@
+---
+/**
+ * A ruled blank: space left for Cam's own words. In development it carries
+ * the file it is filled from, which the authoring layer (press B) reveals.
+ */
+interface Props {
+  /** What belongs here, for screen readers and the authoring layer. */
+  label: string;
+  /** Number of ruled lines for a block blank. */
+  lines?: number | undefined;
+  /** A single-line blank that sits in running text. */
+  inline?: boolean | undefined;
+  /** Inline blank width, e.g. "14ch". */
+  width?: string | undefined;
+  /** Where to fill it in, e.g. "src/site.ts → role". */
+  source?: string | undefined;
+  class?: string | undefined;
+}
+
+const { label, lines = 1, inline = false, width, source, class: className } = Astro.props;
+const style = inline ? (width ? `--blank-width: ${width}` : undefined) : `--lines: ${lines}`;
+---
+
+<span
+  class:list={["blank", inline && "blank--inline", className]}
+  style={style}
+  data-source={import.meta.env.DEV ? source : undefined}
+  ><span class="visually-hidden">{label}: not yet written.</span></span
+>

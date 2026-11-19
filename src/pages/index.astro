@@ -1,0 +1,415 @@
+---
+import { getEntry } from "astro:content";
+import Blank from "../components/Blank.astro";
+import Field from "../components/Field.astro";
+import Fill from "../components/Fill.astro";
+import FalconServices from "../components/figures/FalconServices.astro";
+import Live from "../components/Live.astro";
+import JexpanelDeployment from "../components/figures/JexpanelDeployment.astro";
+import ReleaseActivity from "../components/figures/ReleaseActivity.astro";
+import Ref from "../components/Ref.astro";
+import Document from "../layouts/Document.astro";
+import { commitsInLastYear, getExperience, getProjects, getRepo, releaseFacts } from "../lib/content.ts";
+import { formatDate, formatNumber, languageShares, ordinal, percent } from "../lib/format.ts";
+import { hasText } from "../lib/refs.ts";
+import { site } from "../site.ts";
+
+const projects = await getProjects();
+const jexpanel = projects.find((project) => project.id === "jexpanel");
+const falcon = projects.find((project) => project.id === "falcon-hosting");
+const shortlist = projects.filter((project) => project.data.kind === "shortlist");
+const experience = await getExperience();
+const intro = await getEntry("about", "intro");
+const introHtml = intro?.rendered?.html;
+
+const jexRepo = await getRepo(jexpanel?.data.repository);
+const { latest, lastYear } = releaseFacts(jexRepo);
+const standing = jexRepo?.contributor;
+const shortlistRepos = await Promise.all(shortlist.map((project) => getRepo(project.data.repository)));
+
+const source = (file: string, field: string) => `src/content/${file} → ${field}`;
+const education = (entry: (typeof experience)[number]) => entry.data.kind === "education";
+---
+
+<Document
+  title={`${site.name} (${site.handle})`}
+  description={`Portfolio of ${site.name} (${site.handle}): Jexpanel, Falcon Hosting, further work, experience and correspondence.`}
+  sheets={6}
+>
+  <header class="title-block" id="ref-10" data-sheet data-ref="10">
+    <h1>{site.name}</h1>
+    <Field n={12} label="Role" value={site.role} source="src/site.ts → role" />
+  </header>
+
+  <div class="front">
+    <section class="front__abstract" aria-labelledby="abstract">
+      <h2 class="division" id="abstract">Abstract</h2>
+      {
+        hasText(introHtml) ? (
+          <div class="abstract-text" set:html={introHtml} />
+        ) : (
+          <Blank lines={4} label="Abstract" source="src/content/about/intro.md → body" />
+        )
+      }
+    </section>
+
+    <nav class="front__index" aria-label="Contents">
+      <ol class="index">
+        <li data-ref="10">
+          <span class="n">(10)</span>
+          <div>
+            <p class="index__title">{site.name}</p>
+            <p class="index__facts">
+              <span class="fact"><a href={site.github}>{site.handle}</a></span>{" "}
+              <span class="fact">BSc Software Engineering</span>{" "}
+              <span class="fact"><Fill value={site.location} label="Location" source="src/site.ts → location" width="9ch" /></span>
+            </p>
+          </div>
+        </li>
+        {
+          jexpanel && (
+            <li data-ref="100">
+              <Ref n={100} name="Jexpanel" paren class="n" href="#ref-100" />
+              <div>
+                <p class="index__title"><a href="/jexpanel/">Jexpanel</a></p>
+                <p class="index__facts">
+                  <span class="fact">Game panel &amp; billing system</span>{" "}
+                  {latest && <span class="fact"><Live repo="Jexactyl/Jexactyl" field="release" value={latest.tag} display={latest.tag} /></span>}{" "}
+                  {jexRepo && <span class="fact"><Live repo="Jexactyl/Jexactyl" field="stars" value={jexRepo.stars} display={formatNumber(jexRepo.stars)} /> stars</span>}{" "}
+                  {standing && <span class="fact">{formatNumber(standing.contributions)} contributions, the {ordinal(standing.rank)} most of anyone</span>}
+                </p>
+              </div>
+            </li>
+          )
+        }
+        {
+          falcon && (
+            <li data-ref="200">
+              <Ref n={200} name="Falcon Hosting" paren class="n" href="#ref-200" />
+              <div>
+                <p class="index__title"><a href="/falcon-hosting/">Falcon Hosting</a></p>
+                <p class="index__facts">
+                  <span class="fact">UK hosting company</span>{" "}
+                  <span class="fact">Minecraft, Rust and Hytale servers, VPS and containers</span>
+                </p>
+              </div>
+            </li>
+          )
+        }
+        <li data-ref="300">
+          <Ref n={300} name="Further work" paren class="n" href="#ref-300" />
+          <div>
+            <p class="index__title"><a href="#ref-300">Further work</a></p>
+            <p class="index__facts">
+              {
+                shortlist.map((project) => (
+                  <>
+                    <span class="fact"><a href={`/${project.id}/`} data-ref={String(project.data.numeral)}>{project.data.title}</a></span>{" "}
+                  </>
+                ))
+              }
+            </p>
+          </div>
+        </li>
+        <li data-ref="400">
+          <Ref n={400} name="Experience" paren class="n" href="#ref-400" />
+          <div>
+            <p class="index__title"><a href="#ref-400">Experience</a></p>
+            <p class="index__facts">
+              {
+                experience.map((entry) => (
+                  <>
+                    <span class="fact">{entry.data.qualification ?? entry.data.organisation}</span>{" "}
+                  </>
+                ))
+              }
+            </p>
+          </div>
+        </li>
+        <li data-ref="500">
+          <Ref n={500} name="Correspondence" paren class="n" href="#ref-500" />
+          <div>
+            <p class="index__title"><a href="#ref-500">Correspondence</a></p>
+            <p class="index__facts">
+              <span class="fact"><a href={site.github}>github.com/{site.handle}</a></span>{" "}
+              <span class="fact">{site.email ? <a href={`mailto:${site.email}`}>{site.email}</a> : <Fill value="" label="Email" source="src/site.ts → email" width="8ch" />}</span>{" "}
+              <span class="fact">{site.linkedin ? <a href={site.linkedin}>LinkedIn</a> : <Fill value="" label="LinkedIn" source="src/site.ts → linkedin" width="8ch" />}</span>
+            </p>
+          </div>
+        </li>
+      </ol>
+    </nav>
+
+    <div class="front__figure">
+      <JexpanelDeployment fig={1} first />
+    </div>
+  </div>
+
+  {
+    jexpanel && (
+      <section class="sheet" id="ref-100" data-sheet aria-labelledby="h-100">
+        <header class="sheet__head">
+          <h2 id="h-100" style="view-transition-name: title-100">
+            <a href="/jexpanel/"><span class="n">100</span>Jexpanel</a>
+          </h2>
+          <a class="sheet__more" href="/jexpanel/">Full specification</a>
+          <p class="sheet__sub">Formerly Jexactyl. Game server panel and billing system, open source.</p>
+        </header>
+        <div class="sheet__body">
+          <div>
+            <dl class="furniture">
+              <dt>Role</dt>
+              <dd>
+                <Fill value={jexpanel.data.role} label="Role on Jexpanel" source={source("projects/jexpanel.md", "role")} />
+              </dd>
+              <dt>Period</dt>
+              <dd>
+                <Fill value={jexpanel.data.period} label="Period on Jexpanel" source={source("projects/jexpanel.md", "period")} />
+              </dd>
+              {jexRepo && (
+                <>
+                  <dt>Repository</dt>
+                  <dd>
+                    <a href={jexRepo.url}><code>{jexRepo.fullName}</code></a>
+                  </dd>
+                </>
+              )}
+              {latest && (
+                <>
+                  <dt>Latest release</dt>
+                  <dd>
+                    <Live repo="Jexactyl/Jexactyl" field="release" value={latest.tag} display={latest.tag} />, <Live repo="Jexactyl/Jexactyl" field="releaseDate" value={latest.publishedAt} display={formatDate(latest.publishedAt)} /><span class="quiet">; {lastYear} releases in the past year</span>
+                  </dd>
+                </>
+              )}
+              {standing && (
+                <>
+                  <dt>Standing</dt>
+                  <dd>
+                    {formatNumber(standing.contributions)} contributions, the {ordinal(standing.rank)} most of any
+                    contributor; {formatNumber(commitsInLastYear(jexRepo))} commits in the past year
+                  </dd>
+                </>
+              )}
+              {jexRepo && (
+                <>
+                  <dt>Reach</dt>
+                  <dd>
+                    <Live repo="Jexactyl/Jexactyl" field="stars" value={jexRepo.stars} display={formatNumber(jexRepo.stars)} /> stars, <Live repo="Jexactyl/Jexactyl" field="forks" value={jexRepo.forks} display={formatNumber(jexRepo.forks)} /> forks
+                  </dd>
+                </>
+              )}
+              <dt>Built with</dt>
+              <dd>{jexpanel.data.stack.join(" · ")}</dd>
+            </dl>
+            <div class="summary-block">
+              <h3 class="division">Summary</h3>
+              {jexpanel.data.summary ? (
+                <p>{jexpanel.data.summary}</p>
+              ) : (
+                <Blank lines={3} label="Jexpanel summary" source={source("projects/jexpanel.md", "summary")} />
+              )}
+            </div>
+          </div>
+          {jexRepo && <ReleaseActivity fig={2} repo={jexRepo} user={site.handle} />}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    falcon && (
+      <section class="sheet" id="ref-200" data-sheet aria-labelledby="h-200">
+        <header class="sheet__head">
+          <h2 id="h-200" style="view-transition-name: title-200">
+            <a href="/falcon-hosting/"><span class="n">200</span>Falcon Hosting</a>
+          </h2>
+          <a class="sheet__more" href="/falcon-hosting/">Full specification</a>
+          <p class="sheet__sub">{falcon.data.legalName}. Game servers, VPS and container hosting in the UK and EU.</p>
+        </header>
+        <div class="sheet__body">
+          <div>
+            <dl class="furniture">
+              <dt>Role</dt>
+              <dd>
+                <Fill value={falcon.data.role} label="Role at Falcon Hosting" source={source("projects/falcon-hosting.md", "role")} />
+              </dd>
+              <dt>Period</dt>
+              <dd>
+                <Fill
+                  value={falcon.data.period}
+                  label="Period at Falcon Hosting"
+                  source={source("projects/falcon-hosting.md", "period")}
+                />
+              </dd>
+              {falcon.data.website && (
+                <>
+                  <dt>Website</dt>
+                  <dd>
+                    <a href={falcon.data.website}>{new URL(falcon.data.website).host}</a>
+                  </dd>
+                </>
+              )}
+              {falcon.data.company && (
+                <>
+                  <dt>Company</dt>
+                  <dd>
+                    {falcon.data.legalName}, No. {falcon.data.company.number}, registered in {falcon.data.company.registeredIn}
+                  </dd>
+                </>
+              )}
+              <dt>Services</dt>
+              <dd>{falcon.data.services.join("; ")}</dd>
+              <dt>Regions</dt>
+              <dd>{falcon.data.regions.join(", ")}</dd>
+            </dl>
+            <div class="summary-block">
+              <h3 class="division">Summary</h3>
+              {falcon.data.summary ? (
+                <p>{falcon.data.summary}</p>
+              ) : (
+                <Blank lines={3} label="Falcon Hosting summary" source={source("projects/falcon-hosting.md", "summary")} />
+              )}
+            </div>
+          </div>
+          <FalconServices fig={3} jexpanelHref="#ref-100" jexpanelNote="See FIG. 1" />
+        </div>
+      </section>
+    )
+  }
+
+  <section class="sheet" id="ref-300" data-sheet aria-labelledby="h-300">
+    <header class="sheet__head">
+      <h2 id="h-300"><span class="n">300</span>Further work</h2>
+    </header>
+    <ol class="entries">
+      {
+        shortlist.map((project, index) => {
+          const repo = shortlistRepos[index];
+          const shares = repo ? languageShares(repo.languages, 2) : [];
+          return (
+            <li class="entry" id={`ref-${project.data.numeral}`} data-ref={String(project.data.numeral)}>
+              <div class="entry__head">
+                <span class="n">{project.data.numeral}</span>
+                <h3 style={`view-transition-name: title-${project.data.numeral}`}>
+                  <a href={`/${project.id}/`}>{project.data.title}</a>
+                </h3>
+                <a class="entry__more" href={`/${project.id}/`}>Specification</a>
+              </div>
+              <dl class="furniture">
+                <dt>Role</dt>
+                <dd>
+                  <Fill value={project.data.role} label={`Role on ${project.data.title}`} source={source(`projects/${project.id}.md`, "role")} />
+                </dd>
+                <dt>Period</dt>
+                <dd>
+                  <Fill value={project.data.period} label={`Period on ${project.data.title}`} source={source(`projects/${project.id}.md`, "period")} />
+                </dd>
+                {repo && (
+                  <>
+                    <dt>Repository</dt>
+                    <dd>
+                      <a href={repo.url}><code>{repo.fullName}</code></a>
+                      {project.data.related.length > 0 && (
+                        <span class="quiet"> and {project.data.related.length} related</span>
+                      )}
+                    </dd>
+                    <dt>Languages</dt>
+                    <dd>{shares.map((share) => `${share.name} ${percent(share.share)}`).join(", ") || repo.primaryLanguage}</dd>
+                    <dt>Last push</dt>
+                    <dd>{formatDate(repo.pushedAt)}</dd>
+                  </>
+                )}
+              </dl>
+              {project.data.summary ? (
+                <p>{project.data.summary}</p>
+              ) : (
+                <Blank lines={2} label={`${project.data.title} summary`} source={source(`projects/${project.id}.md`, "summary")} />
+              )}
+            </li>
+          );
+        })
+      }
+    </ol>
+  </section>
+
+  <section class="sheet" id="ref-400" data-sheet aria-labelledby="h-400">
+    <header class="sheet__head">
+      <h2 id="h-400"><span class="n">400</span>Experience</h2>
+    </header>
+    <ol class="entries">
+      {
+        experience.map((entry) => {
+          const file = `experience/${entry.id}.md`;
+          const name = entry.data.qualification ?? entry.data.organisation;
+          const body = entry.rendered?.html;
+          return (
+            <li class="entry" id={`ref-${entry.data.numeral}`} data-ref={String(entry.data.numeral)}>
+              <div class="entry__head">
+                <span class="n">{entry.data.numeral}</span>
+                <h3>{entry.data.link ? <a href={entry.data.link}>{name}</a> : name}</h3>
+              </div>
+              <dl class="furniture">
+                {education(entry) ? (
+                  <>
+                    <dt>Institution</dt>
+                    <dd>
+                      <Fill value={entry.data.organisation} label="Institution" source={source(file, "organisation")} width="16ch" />
+                    </dd>
+                  </>
+                ) : (
+                  <>
+                    <dt>Title</dt>
+                    <dd>
+                      <Fill value={entry.data.title} label={`Title at ${name}`} source={source(file, "title")} width="16ch" />
+                    </dd>
+                  </>
+                )}
+                <dt>Dates</dt>
+                <dd>
+                  <Fill value={entry.data.from} label="From" source={source(file, "from")} width="7ch" /> to{" "}
+                  <Fill value={entry.data.to} label="To" source={source(file, "to")} width="7ch" />
+                </dd>
+                <dt>Location</dt>
+                <dd>
+                  <Fill value={entry.data.location} label="Location" source={source(file, "location")} width="12ch" />
+                </dd>
+              </dl>
+              {hasText(body) ? (
+                <div class="entry__text" set:html={body} />
+              ) : (
+                <Blank lines={2} label={`${name}: description`} source={source(file, "body")} />
+              )}
+            </li>
+          );
+        })
+      }
+    </ol>
+  </section>
+
+  <section class="sheet" id="ref-500" data-sheet aria-labelledby="h-500">
+    <header class="sheet__head">
+      <h2 id="h-500"><span class="n">500</span>Correspondence</h2>
+    </header>
+    <div class="correspondence">
+      <dl class="furniture">
+        <dt><span class="lining">510</span> GitHub</dt>
+        <dd><a href={site.github}>github.com/{site.handle}</a></dd>
+        <dt><span class="lining">520</span> Email</dt>
+        <dd>
+          {site.email ? <a href={`mailto:${site.email}`}>{site.email}</a> : <Fill value="" label="Email" source="src/site.ts → email" width="20ch" />}
+        </dd>
+        <dt><span class="lining">530</span> LinkedIn</dt>
+        <dd>
+          {site.linkedin ? <a href={site.linkedin}>{site.linkedin.replace(/^https?:\/\/(www\.)?/, "")}</a> : <Fill value="" label="LinkedIn" source="src/site.ts → linkedin" width="20ch" />}
+        </dd>
+      </dl>
+      <div>
+        <p>This page prints as a paginated specification, for a hiring panel or a file.</p>
+        <p style="margin-block-start: 1rem">
+          <button class="print-action" type="button" data-print>Print or save as PDF</button>
+        </p>
+      </div>
+    </div>
+  </section>
+</Document>

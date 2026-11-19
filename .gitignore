@@ -1,0 +1,29 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+
+# environment
+.env
+.env.*
+!.env.example
+
+# editors and OS
+.DS_Store
+Thumbs.db
+
+# Claude Code: machine-local settings (the Impeccable hook lives here)
+.claude/settings.local.json
+
+# Impeccable runtime directories (PRODUCT.md, DESIGN.md, .impeccable/config.json,
+# surfaces/ and design.json are meant to be committed)
+.impeccable/questions/
+.impeccable/mocks/
+.impeccable/review/
+.impeccable/build/
+.impeccable/config.local.json

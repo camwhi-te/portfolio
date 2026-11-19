@@ -1,0 +1,46 @@
+---
+import type { Sign } from "../lib/figures.ts";
+import Ref from "./Ref.astro";
+
+/**
+ * A drawing sheet: the drawing, its FIG. label, a one-line caption and the
+ * reference signs list pairing every numeral with the part it names.
+ */
+interface Props {
+  fig: number | string;
+  caption: string;
+  signs?: Sign[] | undefined;
+  id?: string | undefined;
+  /** e.g. "Sheet 2 of 3" on a specification's drawing pages. */
+  sheet?: string | undefined;
+  class?: string | undefined;
+  /** Names a view-transition so the same drawing carries across pages. */
+  transition?: string | undefined;
+}
+
+const { fig, caption, signs = [], id, sheet, class: className, transition } = Astro.props;
+---
+
+<figure class:list={["plate", className]} id={id} aria-label={`Figure ${fig}: ${caption}`}>
+  <div class="plate__sheet" style={transition ? `view-transition-name: ${transition}` : undefined}>
+    {sheet && <span class="plate__sheet-no">{sheet}</span>}
+    <slot />
+  </div>
+  <figcaption>
+    <span class="plate__label">FIG. {fig}</span>
+    <span class="plate__caption">{caption}</span>
+  </figcaption>
+  {
+    signs.length > 0 && (
+      <ol class="signs" aria-label={`Reference signs, figure ${fig}`}>
+        {signs.map((sign) => (
+          <li id={sign.cross ? undefined : `ref-${sign.n}`} data-ref={String(sign.n)}>
+            <Ref n={sign.n} name={sign.name} href={sign.href} />
+            <span>{sign.name}</span>
+          </li>
+        ))}
+      </ol>
+    )
+  }
+  <slot name="after" />
+</figure>

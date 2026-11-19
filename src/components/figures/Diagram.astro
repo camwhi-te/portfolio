@@ -1,0 +1,266 @@
+---
+import { arrowhead, block, cylinder, leader, monitor, rect } from "../../lib/drawing.ts";
+
+/**
+ * Renders one layout of a block diagram from a list of elements. Each element
+ * that names a part carries its reference numeral (`ref`), so pointing at
+ * that numeral anywhere on the page lights the element here.
+ *
+ * Layers set the inking order of the draw-in: 0 outlines, 1 inner parts,
+ * 2 connections, 3 leaders.
+ */
+export type Element =
+  | { kind: "block"; ref: string; x: number; y: number; w: number; h: number; depth?: number; layer?: number }
+  | {
+      kind: "box";
+      ref: string;
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+      label: string;
+      sub?: string;
+      sub2?: string;
+      /** Numeral printed in the box; defaults to `ref`. */
+      numeral?: string;
+      fine?: boolean;
+      /** Label style: drawing capitals by default, or "repo" for a monospaced identifier. */
+      labelClass?: string;
+      layer?: number;
+    }
+  | {
+      kind: "bar";
+      ref: string;
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+      /** Shares in per cent, largest first. The first is hatched, the rest drawn open. */
+      segments: { name: string; share: number }[];
+      layer?: number;
+    }
+  | { kind: "frame"; ref: string; x: number; y: number; w: number; h: number; label: string; layer?: number }
+  | { kind: "cylinder"; ref: string; cx: number; top: number; rx: number; h: number; label: string; layer?: number }
+  | { kind: "monitor"; ref: string; x: number; y: number; w: number; h: number; layer?: number }
+  | {
+      kind: "wire";
+      d: string;
+      heads?: [number, number, number][];
+      label?: { x: number; y: number; text: string; anchor?: "start" | "middle" | "end"; rotate?: number };
+      layer?: number;
+    }
+  | {
+      kind: "leader";
+      ref: string;
+      at: [number, number];
+      from: [number, number];
+      to: [number, number];
+      anchor?: "start" | "middle" | "end";
+      layer?: number;
+    }
+  | {
+      kind: "text";
+      x: number;
+      y: number;
+      text: string;
+      cls?: string;
+      anchor?: "start" | "middle" | "end";
+      ref?: string;
+      layer?: number;
+    };
+
+interface Props {
+  width: number;
+  height: number;
+  elements: Element[];
+  title: string;
+  description: string;
+  class?: string;
+  first?: boolean;
+}
+
+const { width, height, elements, title, description, class: className, first = false } = Astro.props;
+// Deterministic id from the content, so builds are reproducible.
+let hash = 2166136261;
+for (const char of `${title}${width}x${height}`) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
+const uid = `d${(hash >>> 0).toString(36)}`;
+const layer = (value: number | undefined) => `--layer: ${value ?? 0}`;
+---
+
+<svg
+  class:list={["drawing", className]}
+  viewBox={`0 0 ${width} ${height}`}
+  role="img"
+  aria-labelledby={`${uid}-t ${uid}-d`}
+  data-draw={first ? "run" : undefined}
+>
+  <title id={`${uid}-t`}>{title}</title>
+  <desc id={`${uid}-d`}>{description}</desc>
+  {
+    elements.map((element) => {
+      switch (element.kind) {
+        case "block": {
+          const shape = block(element.x, element.y, element.w, element.h, element.depth);
+          return (
+            <g class="part" data-ref={element.ref} style={layer(element.layer)}>
+              <path class="face" d={shape.front} />
+              <path class="lit" d={shape.front} />
+              <path class="shade" d={shape.side} />
+              <path class="ink" d={shape.top} pathLength="1" />
+              <path class="ink" d={shape.side} pathLength="1" />
+              <path class="ink heavy" d={shape.front} pathLength="1" />
+            </g>
+          );
+        }
+        case "box": {
+          const numeral = element.numeral ?? element.ref;
+          const tall = element.h >= 50;
+          const labelY = element.y + (element.sub ? (tall ? 21 : 16) : element.h / 2 + 4);
+          // The numeral sits at the right of the sub-line, clear of long labels.
+          const numeralY = element.sub ? labelY + (tall ? 17 : 15) : labelY;
+          return (
+            <g class="part" data-ref={element.ref} style={layer(element.layer)}>
+              <path class="face" d={rect(element.x, element.y, element.w, element.h)} />
+              <path class="lit" d={rect(element.x, element.y, element.w, element.h)} />
+              <path
+                class:list={["ink", element.fine && "fine"]}
+                d={rect(element.x, element.y, element.w, element.h)}
+                pathLength="1"
+              />
+              <text class={element.labelClass ?? "label"} x={element.x + 12} y={labelY}>
+                {element.label}
+              </text>
+              {element.sub && (
+                <text class="sub" x={element.x + 12} y={labelY + (tall ? 17 : 15)}>
+                  {element.sub}
+                </text>
+              )}
+              {element.sub2 && (
+                <text class="sub" x={element.x + 12} y={labelY + 32}>
+                  {element.sub2}
+                </text>
+              )}
+              <text class="num" x={element.x + element.w - 10} y={numeralY} text-anchor="end" font-size="15">
+                {numeral}
+              </text>
+            </g>
+          );
+        }
+        case "frame":
+          return (
+            <g class="part" data-ref={element.ref} style={layer(element.layer)}>
+              <path class="lit" d={rect(element.x, element.y, element.w, element.h)} opacity="0" />
+              <path class="ink fine" d={rect(element.x, element.y, element.w, element.h)} pathLength="1" />
+              <text class="label" x={element.x + 12} y={element.y + 20}>
+                {element.label}
+              </text>
+              <text class="num" x={element.x + element.w - 10} y={element.y + 20} text-anchor="end" font-size="15">
+                {element.ref}
+              </text>
+            </g>
+          );
+        case "cylinder": {
+          const shape = cylinder(element.cx, element.top, element.rx, 9, element.h);
+          return (
+            <g class="part" data-ref={element.ref} style={layer(element.layer)}>
+              <path class="face" d={shape.face} />
+              <path class="lit" d={shape.face} />
+              <path class="ink" d={shape.body} pathLength="1" />
+              <path class="ink" d={shape.lid} pathLength="1" />
+              <text class="label" x={element.cx} y={element.top + 26} text-anchor="middle">
+                {element.label}
+              </text>
+              <text class="num" x={element.cx} y={element.top + 43} text-anchor="middle" font-size="15">
+                {element.ref}
+              </text>
+            </g>
+          );
+        }
+        case "monitor": {
+          const shape = monitor(element.x, element.y, element.w, element.h);
+          return (
+            <g class="part" data-ref={element.ref} style={layer(element.layer)}>
+              <path class="face" d={shape.case} />
+              <path class="lit" d={shape.screen} />
+              <path class="ink heavy" d={shape.case} pathLength="1" />
+              <path class="ink fine" d={shape.screen} pathLength="1" />
+              <path class="ink" d={shape.neck} pathLength="1" />
+              <path class="ink" d={shape.foot} pathLength="1" />
+            </g>
+          );
+        }
+        case "wire":
+          return (
+            <g class="wire" style={layer(element.layer ?? 2)}>
+              <path class="ink" d={element.d} pathLength="1" />
+              {(element.heads ?? []).map(([x, y, angle]) => (
+                <path class="ink" d={arrowhead(x, y, angle)} pathLength="1" />
+              ))}
+              {element.label && (
+                <text
+                  class="wire-label"
+                  x={element.label.x}
+                  y={element.label.y}
+                  text-anchor={element.label.anchor ?? "middle"}
+                  transform={
+                    element.label.rotate
+                      ? `rotate(${element.label.rotate} ${element.label.x} ${element.label.y})`
+                      : undefined
+                  }
+                >
+                  {element.label.text}
+                </text>
+              )}
+            </g>
+          );
+        case "leader":
+          return (
+            <g class="part" data-ref={element.ref} style={layer(element.layer ?? 3)}>
+              <path
+                class="ink fine"
+                d={leader(element.from[0], element.from[1], element.to[0], element.to[1])}
+                pathLength="1"
+              />
+              <text class="num" x={element.at[0]} y={element.at[1]} text-anchor={element.anchor ?? "start"}>
+                {element.ref}
+              </text>
+            </g>
+          );
+        case "bar": {
+          const gap = 2;
+          const usable = element.w - gap * Math.max(0, element.segments.length - 1);
+          let cursor = element.x;
+          const pieces = element.segments.map((segment, index) => {
+            const width = Math.max(1.5, (usable * segment.share) / 100);
+            const piece = { x: cursor, width, hatched: index === 0, name: segment.name };
+            cursor += width + gap;
+            return piece;
+          });
+          return (
+            <g class="part" data-ref={element.ref} style={layer(element.layer)}>
+              {pieces.map((piece) => (
+                <>
+                  {piece.hatched && <path class="shade" d={rect(piece.x, element.y, piece.width, element.h)} />}
+                  <path class="ink fine" d={rect(piece.x, element.y, piece.width, element.h)} pathLength="1" />
+                </>
+              ))}
+            </g>
+          );
+        }
+        case "text":
+          return (
+            <text
+              class={element.cls ?? "sub"}
+              x={element.x}
+              y={element.y}
+              text-anchor={element.anchor ?? "start"}
+              data-ref={element.ref}
+              style={layer(element.layer)}
+            >
+              {element.text}
+            </text>
+          );
+      }
+    })
+  }
+</svg>

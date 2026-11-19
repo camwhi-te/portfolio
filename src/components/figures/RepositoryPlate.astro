@@ -1,0 +1,142 @@
+---
+import { formatDate, languageShares, percent } from "../../lib/format.ts";
+import type { RepoEntry } from "../../lib/github/schema.ts";
+import Plate from "../Plate.astro";
+import Diagram, { type Element } from "./Diagram.astro";
+
+/**
+ * FIG: the repositories that make up a project, each drawn as a part with
+ * its language composition (by bytes, as GitHub measures it) and its dates.
+ * Numerals follow the project's: 310 Influx gives 312, 314, 316...
+ */
+interface Props {
+  fig: number | string;
+  numeral: number;
+  title: string;
+  repos: RepoEntry[];
+  sheet?: string | undefined;
+}
+
+const { fig, numeral, title: projectTitle, repos, sheet } = Astro.props;
+const [primary, ...related] = repos;
+const refOf = (index: number) => String(numeral + 2 * (index + 1));
+
+const facts = (repo: RepoEntry) => {
+  const shares = languageShares(repo.languages, 0.5);
+  const lead = shares
+    .slice(0, 3)
+    .map((share) => `${share.name} ${percent(share.share)}`)
+    .join(" · ");
+  return {
+    shares: shares.length ? shares : [{ name: repo.primaryLanguage ?? "Unknown", share: 100 }],
+    languages: lead || repo.primaryLanguage || "Languages not reported",
+    dates: `Created ${formatDate(repo.createdAt)} · last push ${formatDate(repo.pushedAt)}`,
+  };
+};
+
+function layout(kind: "wide" | "tall"): { width: number; height: number; elements: Element[] } {
+  const elements: Element[] = [];
+  if (!primary) return { width: 760, height: 40, elements };
+  const main = facts(primary);
+  const wide = kind === "wide";
+  const width = wide ? 760 : 360;
+  const relatedHeight = 74;
+  const relatedGap = 16;
+  const stack = related.length * relatedHeight + Math.max(0, related.length - 1) * relatedGap;
+  const blockW = wide ? 316 : 300;
+  const blockH = 132;
+  const height = wide ? Math.max(blockH + 56, stack + 48) : blockH + 64 + (stack ? stack + 40 : 0);
+  const bx = wide ? (related.length ? 24 : (width - blockW) / 2) : 20;
+  const by = wide ? Math.max(32, (height - blockH) / 2 + 6) : 44;
+
+  elements.push(
+    { kind: "block", ref: refOf(0), x: bx, y: by, w: blockW, h: blockH, layer: 0 },
+    { kind: "text", ref: refOf(0), x: bx + 16, y: by + 30, text: primary.fullName, cls: "repo", layer: 1 },
+    { kind: "text", ref: refOf(0), x: bx + 16, y: by + 52, text: main.languages, layer: 1 },
+    { kind: "text", ref: refOf(0), x: bx + 16, y: by + 70, text: main.dates, layer: 1 },
+    { kind: "bar", ref: refOf(0), x: bx + 16, y: by + 92, w: blockW - 32, h: 14, segments: main.shares, layer: 2 },
+  );
+  elements.push({
+    kind: "leader",
+    ref: refOf(0),
+    at: wide ? [bx, by - 22] : [width - 8, by - 24],
+    anchor: wide ? "start" : "end",
+    from: wide ? [bx + 30, by - 26] : [width - 34, by - 22],
+    to: wide ? [bx + 48, by - 6] : [bx + blockW - 4, by - 6],
+  });
+
+  related.forEach((repo, index) => {
+    const info = facts(repo);
+    const rx = wide ? 430 : 56;
+    const ry = wide
+      ? (height - stack) / 2 + index * (relatedHeight + relatedGap)
+      : by + blockH + 48 + index * (relatedHeight + relatedGap);
+    const rw = wide ? 306 : 290;
+    elements.push(
+      {
+        kind: "box",
+        ref: refOf(index + 1),
+        x: rx,
+        y: ry,
+        w: rw,
+        h: relatedHeight,
+        label: repo.fullName,
+        labelClass: "repo",
+        sub: `${info.languages}`,
+        sub2: `Created ${formatDate(repo.createdAt)}`,
+        layer: 1,
+      },
+    );
+    if (wide) {
+      elements.push({ kind: "wire", d: `M394 ${ry + relatedHeight / 2} H${rx}` });
+    } else {
+      elements.push({ kind: "wire", d: `M38 ${ry + relatedHeight / 2} H${rx}` });
+    }
+  });
+
+  if (related.length) {
+    const first = wide ? (height - stack) / 2 + relatedHeight / 2 : by + blockH + 48 + relatedHeight / 2;
+    const last = first + (related.length - 1) * (relatedHeight + relatedGap);
+    elements.push(
+      wide
+        ? { kind: "wire", d: `M${bx + blockW + 16} ${by + blockH / 2} H394 M394 ${first} V${last}`, layer: 2 }
+        : { kind: "wire", d: `M38 ${by + blockH} V${last}`, layer: 2 },
+    );
+  }
+  return { width, height, elements };
+}
+
+const wide = layout("wide");
+const tall = layout("tall");
+const caption =
+  related.length > 0
+    ? `The ${repos.length} repositories of ${projectTitle}, with their language composition`
+    : `The repository of ${projectTitle}, with its language composition`;
+const description = repos
+  .map((repo, index) => `${repo.fullName} (${refOf(index)}): ${facts(repo).languages}; ${facts(repo).dates}.`)
+  .join(" ");
+const signs = repos.map((repo, index) => ({ n: refOf(index), name: repo.fullName }));
+---
+
+{
+  primary && (
+    <Plate fig={fig} caption={caption} signs={signs} sheet={sheet}>
+      <Diagram
+        class="plate__drawing--wide"
+        width={wide.width}
+        height={wide.height}
+        elements={wide.elements}
+        title={`Figure ${fig}: ${caption}`}
+        description={description}
+      />
+      <Diagram
+        class="plate__drawing--tall"
+        width={tall.width}
+        height={tall.height}
+        elements={tall.elements}
+        title={`Figure ${fig}: ${caption}`}
+        description={description}
+      />
+    </Plate>
+  )
+}

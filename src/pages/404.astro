@@ -1,0 +1,16 @@
+---
+import Document from "../layouts/Document.astro";
+import { site } from "../site.ts";
+---
+
+<Document title={`No such sheet, ${site.name}`} description="This address does not lead to a sheet of the portfolio." sheets={1}>
+  <header class="title-block" data-sheet>
+    <h1>No such sheet</h1>
+  </header>
+  <div class="division-block">
+    <p class="not-found">
+      Nothing is filed at <code>{Astro.url.pathname}</code>. The <a href="/">front page</a> lists every specification, and
+      the running head above reaches each section.
+    </p>
+  </div>
+</Document>

@@ -1,0 +1,15 @@
+---
+import Blank from "./Blank.astro";
+
+/** A value Cam supplies: shown when present, otherwise an inline ruled blank. */
+interface Props {
+  value: string | undefined;
+  label: string;
+  source: string;
+  width?: string | undefined;
+}
+
+const { value, label, source, width = "12ch" } = Astro.props;
+---
+
+{value ? <Fragment>{value}</Fragment> : <Blank inline label={label} source={source} width={width} />}

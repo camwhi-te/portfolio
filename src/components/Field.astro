@@ -1,0 +1,18 @@
+---
+import Fill from "./Fill.astro";
+
+/** A labelled single-line field, as on a specification's front page: "(12) Role ____". */
+interface Props {
+  n?: number | undefined;
+  label: string;
+  value: string | undefined;
+  source: string;
+}
+
+const { n, label, value, source } = Astro.props;
+---
+
+<div class="field">
+  <span class="field__label">{n !== undefined && <span class="n lining">({n})</span>}{label}</span>
+  <span class="field__value"><Fill value={value} label={label} source={source} width="100%" /></span>
+</div>
