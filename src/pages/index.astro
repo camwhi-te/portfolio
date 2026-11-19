@@ -76,7 +76,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
                   <span class="fact">Game panel &amp; billing system</span>{" "}
                   {latest && <span class="fact"><Live repo="Jexactyl/Jexactyl" field="release" value={latest.tag} display={latest.tag} /></span>}{" "}
                   {jexRepo && <span class="fact"><Live repo="Jexactyl/Jexactyl" field="stars" value={jexRepo.stars} display={formatNumber(jexRepo.stars)} /> stars</span>}{" "}
-                  {standing && <span class="fact">{formatNumber(standing.contributions)} contributions, the {ordinal(standing.rank)} most of anyone</span>}
+                  {standing && <span class="fact"><strong>{formatNumber(standing.contributions)} contributions</strong>, the {ordinal(standing.rank)} most of anyone</span>}
                 </p>
               </div>
             </li>
@@ -186,7 +186,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
                 <>
                   <dt>Standing</dt>
                   <dd>
-                    {formatNumber(standing.contributions)} contributions, the {ordinal(standing.rank)} most of any
+                    <strong>{formatNumber(standing.contributions)} contributions</strong>, the {ordinal(standing.rank)} most of any
                     contributor; {formatNumber(commitsInLastYear(jexRepo))} commits in the past year
                   </dd>
                 </>

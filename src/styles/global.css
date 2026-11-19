@@ -673,6 +673,46 @@
   letter-spacing: 0.2em;
 }
 
+/* ------------------------------------------------------------ text roles */
+
+/*
+ * Each kind of text looks like itself, using only the faces already loaded:
+ *   labels    true small caps in graphite, so they never read as values;
+ *   titles    semibold, so each entry starts somewhere definite;
+ *   figures   semibold, for the headline numbers a reader is scanning for;
+ *   asides    italic graphite, for qualifiers and subtitles;
+ *   prose     roman ink, unchanged.
+ */
+.furniture dt,
+.field__label {
+  font-size: 1em;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.075em;
+  padding-block-start: 0;
+}
+
+.index__title,
+.entry__head h3,
+.pager .title {
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+strong,
+.furniture data:is([data-live-field="release"], [data-live-field="stars"], [data-live-field="forks"]),
+.index__facts data:is([data-live-field="release"], [data-live-field="stars"]) {
+  font-weight: 600;
+}
+.index__facts :is(strong, data[data-live-field]) {
+  color: var(--ink);
+}
+
+.furniture .quiet,
+.sheet__sub,
+.title-block .formerly {
+  font-style: italic;
+}
+
 /* ---------------------------------------------------------- live figures */
 
 data[data-live-field] {

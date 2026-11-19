@@ -141,7 +141,7 @@ const after = section(400);
             <>
               <dt>Standing</dt>
               <dd>
-                {formatNumber(repo.contributor.contributions)} contributions, the {ordinal(repo.contributor.rank)} most of any contributor; {formatNumber(commitsInLastYear(repo))} commits in the past year
+                <strong>{formatNumber(repo.contributor.contributions)} contributions</strong>, the {ordinal(repo.contributor.rank)} most of any contributor; {formatNumber(commitsInLastYear(repo))} commits in the past year
               </dd>
             </>
           )
