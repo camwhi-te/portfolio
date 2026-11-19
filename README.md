@@ -30,7 +30,7 @@ While `npm run dev` is running, press **B** to label every blank with the file a
 
 When a project description mentions a part by its numeral, the numeral becomes live. For example, "the panel 102 hands each server to the daemon 106" links both numbers to the drawing, and pointing at either lights the part. Only numerals drawn on that page are linked. The numerals for each figure are listed in `src/lib/figures.ts` and printed under every drawing.
 
-The site's own numbering is 10 for you, 100 for Jexpanel, 200 for Falcon Hosting, 300 for further work (310, 320…), 400 for experience and 500 for correspondence.
+The site's own numbering is 10 for you, 100 for Jexpanel, 200 for Falcon Hosting, 300 for further work (310, 320…), 400 for experience and 500 for contact.
 
 ## Projects
 

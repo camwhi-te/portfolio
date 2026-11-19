@@ -7,7 +7,7 @@ import FalconServices from "../components/figures/FalconServices.astro";
 import Live from "../components/Live.astro";
 import JexpanelDeployment from "../components/figures/JexpanelDeployment.astro";
 import ReleaseActivity from "../components/figures/ReleaseActivity.astro";
-import Ref from "../components/Ref.astro";
+import { section } from "../lib/nav.ts";
 import Document from "../layouts/Document.astro";
 import { commitsInLastYear, getExperience, getProjects, getRepo, releaseFacts } from "../lib/content.ts";
 import { formatDate, formatNumber, languageShares, ordinal, percent } from "../lib/format.ts";
@@ -33,7 +33,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
 
 <Document
   title={`${site.name} (${site.handle})`}
-  description={`Portfolio of ${site.name} (${site.handle}): Jexpanel, Falcon Hosting, further work, experience and correspondence.`}
+  description={`Portfolio of ${site.name} (${site.handle}): Jexpanel, Falcon Hosting, other projects, experience and contact details.`}
   sheets={6}
 >
   <header class="title-block" id="ref-10" data-sheet data-ref="10">
@@ -56,7 +56,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
     <nav class="front__index" aria-label="Contents">
       <ol class="index">
         <li data-ref="10">
-          <span class="n">(10)</span>
+          <span class="n" aria-hidden="true">(10)</span>
           <div>
             <p class="index__title">{site.name}</p>
             <p class="index__facts">
@@ -69,7 +69,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
         {
           jexpanel && (
             <li data-ref="100">
-              <Ref n={100} name="Jexpanel" paren class="n" href="#ref-100" />
+              <span class="n" aria-hidden="true">(100)</span>
               <div>
                 <p class="index__title"><a href="/jexpanel/">Jexpanel</a></p>
                 <p class="index__facts">
@@ -85,7 +85,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
         {
           falcon && (
             <li data-ref="200">
-              <Ref n={200} name="Falcon Hosting" paren class="n" href="#ref-200" />
+              <span class="n" aria-hidden="true">(200)</span>
               <div>
                 <p class="index__title"><a href="/falcon-hosting/">Falcon Hosting</a></p>
                 <p class="index__facts">
@@ -97,9 +97,9 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
           )
         }
         <li data-ref="300">
-          <Ref n={300} name="Further work" paren class="n" href="#ref-300" />
+          <span class="n" aria-hidden="true">(300)</span>
           <div>
-            <p class="index__title"><a href="#ref-300">Further work</a></p>
+            <p class="index__title"><a href="#ref-300">{section(300).label}</a></p>
             <p class="index__facts">
               {
                 shortlist.map((project) => (
@@ -112,7 +112,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
           </div>
         </li>
         <li data-ref="400">
-          <Ref n={400} name="Experience" paren class="n" href="#ref-400" />
+          <span class="n" aria-hidden="true">(400)</span>
           <div>
             <p class="index__title"><a href="#ref-400">Experience</a></p>
             <p class="index__facts">
@@ -127,9 +127,9 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
           </div>
         </li>
         <li data-ref="500">
-          <Ref n={500} name="Correspondence" paren class="n" href="#ref-500" />
+          <span class="n" aria-hidden="true">(500)</span>
           <div>
-            <p class="index__title"><a href="#ref-500">Correspondence</a></p>
+            <p class="index__title"><a href="#ref-500">{section(500).label}</a></p>
             <p class="index__facts">
               <span class="fact"><a href={site.github}>github.com/{site.handle}</a></span>{" "}
               <span class="fact">{site.email ? <a href={`mailto:${site.email}`}>{site.email}</a> : <Fill value="" label="Email" source="src/site.ts → email" width="8ch" />}</span>{" "}
@@ -152,7 +152,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
           <h2 id="h-100" style="view-transition-name: title-100">
             <a href="/jexpanel/"><span class="n">100</span>Jexpanel</a>
           </h2>
-          <a class="sheet__more" href="/jexpanel/">Full specification</a>
+          <a class="sheet__more" href="/jexpanel/">Open the Jexpanel page&nbsp;→</a>
           <p class="sheet__sub">Formerly Jexactyl. Game server panel and billing system, open source.</p>
         </header>
         <div class="sheet__body">
@@ -224,7 +224,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
           <h2 id="h-200" style="view-transition-name: title-200">
             <a href="/falcon-hosting/"><span class="n">200</span>Falcon Hosting</a>
           </h2>
-          <a class="sheet__more" href="/falcon-hosting/">Full specification</a>
+          <a class="sheet__more" href="/falcon-hosting/">Open the Falcon Hosting page&nbsp;→</a>
           <p class="sheet__sub">{falcon.data.legalName}. Game servers, VPS and container hosting in the UK and EU.</p>
         </header>
         <div class="sheet__body">
@@ -280,7 +280,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
 
   <section class="sheet" id="ref-300" data-sheet aria-labelledby="h-300">
     <header class="sheet__head">
-      <h2 id="h-300"><span class="n">300</span>Further work</h2>
+      <h2 id="h-300"><span class="n">300</span>{section(300).label}</h2>
     </header>
     <ol class="entries">
       {
@@ -294,7 +294,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
                 <h3 style={`view-transition-name: title-${project.data.numeral}`}>
                   <a href={`/${project.id}/`}>{project.data.title}</a>
                 </h3>
-                <a class="entry__more" href={`/${project.id}/`}>Specification</a>
+                <a class="entry__more" href={`/${project.id}/`}>Project page&nbsp;→</a>
               </div>
               <dl class="furniture">
                 <dt>Role</dt>
@@ -389,7 +389,7 @@ const education = (entry: (typeof experience)[number]) => entry.data.kind === "e
 
   <section class="sheet" id="ref-500" data-sheet aria-labelledby="h-500">
     <header class="sheet__head">
-      <h2 id="h-500"><span class="n">500</span>Correspondence</h2>
+      <h2 id="h-500"><span class="n">500</span>{section(500).label}</h2>
     </header>
     <div class="correspondence">
       <dl class="furniture">

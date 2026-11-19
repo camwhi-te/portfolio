@@ -13,6 +13,7 @@ import { commitsInLastYear, getProjects, getRepo, releaseFacts } from "../lib/co
 import { falconSigns, jexpanelSigns, type Sign } from "../lib/figures.ts";
 import { formatDate, formatNumber, languageShares, ordinal, percent } from "../lib/format.ts";
 import type { RepoEntry } from "../lib/github/schema.ts";
+import { section } from "../lib/nav.ts";
 import { hasText, linkNumerals } from "../lib/refs.ts";
 import { site } from "../site.ts";
 
@@ -64,6 +65,9 @@ const previous = projects[index - 1];
 const next = projects[index + 1];
 const shares = repo ? languageShares(repo.languages, 1) : [];
 const references = [repo, ...related].filter((entry): entry is RepoEntry => entry !== undefined);
+const isShortlist = data.kind === "shortlist";
+const others = section(300);
+const after = section(400);
 ---
 
 <Document
@@ -72,6 +76,14 @@ const references = [repo, ...related].filter((entry): entry is RepoEntry => entr
   current={data.kind === "flagship" ? data.numeral : 300}
   sheets={sheets}
 >
+  <nav class="trail" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/">{site.name}</a></li>
+      {isShortlist && <li><a href={others.href}>{others.label}</a></li>}
+      <li aria-current="page">{data.title}</li>
+    </ol>
+  </nav>
+
   <header class="title-block" id={`ref-${data.numeral}`} data-sheet data-ref={String(data.numeral)}>
     <div>
       <h1 style={`view-transition-name: title-${data.numeral}`}>
@@ -277,16 +289,16 @@ const references = [repo, ...related].filter((entry): entry is RepoEntry => entr
     </ol>
   </section>
 
-  <nav class="pager" aria-label="Other specifications">
+  <nav class="pager" aria-label="More projects">
     {
       previous ? (
         <a href={`/${previous.id}/`} rel="prev">
-          <span class="dir">Previous, ({previous.data.numeral})</span>
+          <span class="dir">← Previous project</span>
           <span class="title">{previous.data.title}</span>
         </a>
       ) : (
         <a href="/">
-          <span class="dir">Front page</span>
+          <span class="dir">← Front page</span>
           <span class="title">{site.name}</span>
         </a>
       )
@@ -294,13 +306,13 @@ const references = [repo, ...related].filter((entry): entry is RepoEntry => entr
     {
       next ? (
         <a href={`/${next.id}/`} rel="next">
-          <span class="dir">Next, ({next.data.numeral})</span>
+          <span class="dir">Next project →</span>
           <span class="title">{next.data.title}</span>
         </a>
       ) : (
-        <a href="/#ref-400">
-          <span class="dir">Next, (400)</span>
-          <span class="title">Experience</span>
+        <a href={after.href}>
+          <span class="dir">Back to the front page →</span>
+          <span class="title">{after.label}</span>
         </a>
       )
     }

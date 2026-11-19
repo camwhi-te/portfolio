@@ -211,6 +211,22 @@
 
 /* ------------------------------------------------------------ running head */
 
+/*
+ * The running head stays at the top of the window at every width, so the way
+ * home and every section are always one tap away. Its height is --head, which
+ * also sets how far below it a followed link lands.
+ */
+@media (width < 62em) {
+  :root {
+    --head: 5.25rem;
+  }
+}
+@media (width < 40em) {
+  :root {
+    --head: 3rem;
+  }
+}
+
 .running-head {
   position: sticky;
   inset-block-start: 0;
@@ -223,83 +239,164 @@
 .running-head__inner {
   display: grid;
   grid-template-columns: auto 1fr auto;
+  grid-template-areas: "home nav sheet";
   align-items: center;
-  gap: var(--gutter);
+  gap: 0 var(--gutter);
   min-block-size: var(--head);
   padding-inline: var(--margin);
 }
 .running-head__home {
+  grid-area: home;
   text-decoration: none;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  padding-block: 0.6rem;
+  white-space: nowrap;
+}
+.running-head__home:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+}
+.running-head__nav {
+  grid-area: nav;
 }
 .running-head__nav ol {
   list-style: none;
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  column-gap: clamp(1rem, 0.2rem + 1.6vw, 2.25rem);
-  row-gap: 0.25rem;
+  column-gap: clamp(1.25rem, 0.4rem + 1.8vw, 2.5rem);
 }
 .running-head__nav a {
-  text-decoration: none;
+  display: block;
   white-space: nowrap;
   padding-block: 0.6rem;
-}
-.running-head__nav a:hover .label,
-.running-head__nav a[aria-current] .label {
   text-decoration: underline;
+  text-decoration-color: transparent;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.3em;
+  transition: text-decoration-color var(--quick) ease-out;
 }
-.running-head__nav .n {
-  color: var(--graphite);
-  margin-inline-end: 0.3em;
+.running-head__nav a:hover {
+  text-decoration-color: color-mix(in oklab, var(--ink) 55%, var(--paper));
+}
+/* Where you are: the page you are on, or the front-page section being read. */
+.running-head__nav a:is([aria-current], .is-here) {
+  text-decoration-color: var(--ink);
+  text-decoration-thickness: 2px;
 }
 .running-head__sheet {
+  grid-area: sheet;
   color: var(--graphite);
   white-space: nowrap;
 }
 .running-head__sheet output {
   color: var(--ink);
 }
+.running-head__toggle {
+  grid-area: toggle;
+  display: none;
+  font: inherit;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  padding: 0.3rem 0.85rem;
+  min-block-size: 2.25rem;
+  min-inline-size: 5.5rem;
+  cursor: pointer;
+}
+.running-head__toggle:hover,
+.running-head__toggle[aria-expanded="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
 
+/* Tablet: the name and the sheet counter, then every section on a row of its own. */
 @media (width < 62em) {
-  .running-head {
-    position: static;
-  }
   .running-head__inner {
     grid-template-columns: 1fr auto;
-    padding-block: 0.4rem;
+    grid-template-areas: "home sheet" "nav nav";
+    padding-block: 0.15rem 0.2rem;
   }
-  .running-head__nav {
-    grid-column: 1 / -1;
-    grid-row: 2;
+  .running-head__home {
+    padding-block: 0.45rem 0.1rem;
   }
   .running-head__nav ol {
     justify-content: flex-start;
   }
   .running-head__nav a {
-    padding-block: 0.35rem;
+    padding-block: 0.45rem 0.55rem;
   }
 }
-@media (width < 34em) {
-  /* One swipeable row that keeps its labels; the fade says there is more. */
-  .running-head__nav ol {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-    margin-inline-end: calc(var(--margin) * -1);
-    padding-inline-end: var(--margin);
-    mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+
+/* Phone: the name and a Menu button; the sections open beneath as a list. */
+@media (width < 40em) {
+  .running-head__inner {
+    padding-block: 0;
   }
-  .running-head__nav ol::-webkit-scrollbar {
+  .running-head[data-menu] .running-head__inner {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: var(--head) auto;
+    grid-template-areas: "home toggle" "nav nav";
+  }
+  .running-head[data-menu] .running-head__sheet {
     display: none;
   }
-  .running-head__nav a {
-    display: inline-block;
-    padding-block: 0.6rem;
+  .running-head[data-menu] .running-head__toggle {
+    display: block;
   }
+  .running-head[data-menu="closed"] .running-head__nav {
+    display: none;
+  }
+  .running-head[data-menu="open"] .running-head__nav {
+    border-block-start: 1px solid var(--rule);
+    padding-block-end: 0.5rem;
+  }
+  .running-head[data-menu] .running-head__nav ol {
+    flex-direction: column;
+  }
+  .running-head[data-menu] .running-head__nav li + li {
+    border-block-start: 1px solid var(--hairline);
+  }
+  .running-head[data-menu] .running-head__nav a {
+    padding-block: 0.8rem;
+    font-size: 1.125rem;
+  }
+  /* Without the script, the sections stay on view and wrap. */
+  .running-head:not([data-menu]) .running-head__inner {
+    grid-template-areas: "home sheet" "nav nav";
+    grid-template-columns: 1fr auto;
+  }
+  .running-head:not([data-menu]) .running-head__nav ol {
+    column-gap: 1.1rem;
+  }
+}
+
+/* ------------------------------------------------------------ breadcrumb */
+
+.trail {
+  padding-block-start: clamp(1.25rem, 0.8rem + 1.2vw, 2rem);
+  font-size: var(--small);
+  color: var(--graphite);
+}
+.trail ol {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+}
+.trail li:not(:last-child)::after {
+  content: "/";
+  margin-inline: 0.6em;
+  color: color-mix(in oklab, var(--ink) 30%, var(--paper));
+}
+.trail a {
+  color: var(--ink);
+}
+.trail + .title-block {
+  padding-block-start: clamp(0.75rem, 0.4rem + 1.2vw, 1.5rem);
 }
 
 /* ------------------------------------------------------------- page frame */
@@ -1337,6 +1434,7 @@ th.num {
     background: #fff;
   }
   .running-head,
+  .trail,
   .skip-link,
   .author-hint,
   .print-action,

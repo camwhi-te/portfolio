@@ -1,9 +1,11 @@
 ---
+import { sections } from "../lib/nav.ts";
 import { site } from "../site.ts";
 
 /**
- * The running head: handle, the numeral index of the whole site, and the
- * sheet counter, which follows the reader down the page.
+ * The running head: the name (always the way home), the site's sections, and
+ * the sheet counter. It stays at the top of the window at every width; on a
+ * phone the sections fold behind a Menu button.
  */
 interface Props {
   /** Numeral of the page or section being read, for aria-current. */
@@ -12,32 +14,24 @@ interface Props {
 }
 
 const { current, sheets } = Astro.props;
-
-const items = [
-  { n: 100, label: "Jexpanel", href: "/jexpanel/" },
-  { n: 200, label: "Falcon Hosting", href: "/falcon-hosting/" },
-  { n: 300, label: "Further work", href: "/#ref-300" },
-  { n: 400, label: "Experience", href: "/#ref-400" },
-  { n: 500, label: "Correspondence", href: "/#ref-500" },
-];
+const isHome = Astro.url.pathname === "/";
 ---
 
-<header class="running-head">
+<header class="running-head" data-running-head>
   <div class="running-head__inner">
-    <a class="running-head__home" href="/" aria-label={`${site.name}, front page`}>{site.handle}</a>
-    <nav class="running-head__nav" aria-label="Index">
+    <a class="running-head__home" href="/" aria-current={isHome ? "page" : undefined}>
+      {site.name}<span class="visually-hidden">, front page</span>
+    </a>
+    <button class="running-head__toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-menu-toggle>
+      Menu
+    </button>
+    <nav class="running-head__nav" id="site-nav" aria-label="Main">
       <ol>
         {
-          items.map((item) => (
+          sections.map((item) => (
             <li>
-              <a
-                href={item.href}
-                data-ref={String(item.n)}
-                aria-current={current === item.n ? "page" : undefined}
-                aria-label={`${item.n}, ${item.label}`}
-              >
-                <span class="n">({item.n})</span>
-                <span class="label">{item.label}</span>
+              <a href={item.href} data-ref={String(item.n)} aria-current={current === item.n ? "page" : undefined}>
+                {item.label}
               </a>
             </li>
           ))

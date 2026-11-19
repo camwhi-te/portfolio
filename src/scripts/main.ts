@@ -1,9 +1,11 @@
 import { initCharts } from "./charts.ts";
 import { initDrawings } from "./drawings.ts";
 import { refreshLiveFigures } from "./live-figures.ts";
+import { initMenu } from "./menu.ts";
 import { initNumerals } from "./numerals.ts";
 import { initSheets } from "./sheets.ts";
 
+initMenu();
 initNumerals();
 initDrawings();
 initSheets();
